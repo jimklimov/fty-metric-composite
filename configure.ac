@@ -209,7 +209,7 @@ AS_IF([test x"${search_libczmq}" = xyes], [
 
     found_pkgconfig=""
     found_linkname=""
-    PKG_CHECK_MODULES([czmq], [libczmq >= 3.0.0],
+    PKG_CHECK_MODULES([czmq], [libczmq >= 3.0.2],
     [
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $czmq_LIBS"
         was_czmq_check_lib_detected=pkgcfg
@@ -234,7 +234,7 @@ AS_IF([test x"${search_libczmq}" = xyes], [
                 )
         fi
 
-        AC_CHECK_LIB([czmq], [zmsg_test],
+        AC_CHECK_LIB([czmq], [zhashx_test],
             [
                 was_czmq_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lczmq"
@@ -261,7 +261,7 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libczmq
             ],
         [xno], [
                 AC_SUBST([pkgconfig_name_libczmq],[libczmq])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for libczmq 3.0.0 or higher])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libczmq 3.0.2 or higher])
     ])
 ])
 dnl END of enabled attempts to search for libczmq
