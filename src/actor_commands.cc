@@ -206,6 +206,21 @@ actor_commands_test (bool verbose)
 {
     if ( verbose )
         log_set_level (LOG_DEBUG);
+
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
+    char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
+    assert (test_state_file != NULL);
+
     printf (" * actor_commands: ");
     //  @selftest
     static const char* endpoint = "ipc://bios-actor-commands-test";
@@ -414,11 +429,11 @@ actor_commands_test (bool verbose)
     message = zmsg_new ();
     assert (message);
     zmsg_addstr (message, "STATE_FILE");
-    zmsg_addstr (message, "./test_state_file");
+    zmsg_addstr (message, test_state_file);
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), "./test_state_file"));
+    assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // CFG_DIRECTORY
@@ -429,7 +444,7 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), "./test_state_file"));
+    assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), "./"));
 
     // CFG_DIRECTORY
@@ -440,12 +455,13 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), "./test_state_file"));
+    assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), "../"));
 
     zmsg_destroy (&message);
     c_metric_conf_destroy (&cfg);
     data_destroy (&data);
+    zstr_free (&test_state_file);
     zactor_destroy (&malamute);
     //  @end
     printf ("OK\n");
