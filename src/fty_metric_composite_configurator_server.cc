@@ -577,6 +577,21 @@ fty_metric_composite_configurator_server_test (bool verbose)
     if ( verbose ) 
         log_set_level (LOG_DEBUG);
     static const char* endpoint = "inproc://bios-composite-configurator-server-test";
+
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
+    char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
+    assert (test_state_file != NULL);
+
     printf (" * fty_metric_composite_configurator_server: ");
     if (verbose)
         printf ("\n");
@@ -604,7 +619,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     int r = system ("mkdir -p ./test_dir");
     assert ( r != -1 ); // make debian g++ happy
     zstr_sendx (configurator, "CFG_DIRECTORY", "./test_dir", NULL);
-    zstr_sendx (configurator, "STATE_FILE", "./test_state_file", NULL);
+    zstr_sendx (configurator, "STATE_FILE", test_state_file, NULL);
     zstr_sendx (configurator, "CONNECT", endpoint, NULL);
     zstr_sendx (configurator, "CONSUMER", "ASSETS", ".*", NULL);
     zstr_sendx (configurator, "PRODUCER", "_METRICS_UNAVAILABLE", ".*", NULL);
@@ -1436,6 +1451,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
         printf ("Test block -3- Ok\n");
     }*/
 
+    zstr_free (&test_state_file);
     mlm_client_destroy (&producer);
     mlm_client_destroy (&alert_generator);
     zactor_destroy (&configurator);
