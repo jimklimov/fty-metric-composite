@@ -3,8 +3,6 @@ AM_CPPFLAGS += \
 
 CLEANFILES += \
 	stderr.txt \
-	state_file1 \
-	state_file \
 	test_dir/Rack01-input-temperature.cfg \
 	test_dir/Rack01-output-temperature.cfg \
 	test_dir/Rack01-input-humidity.cfg \

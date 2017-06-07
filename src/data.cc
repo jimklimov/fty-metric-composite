@@ -875,6 +875,22 @@ test4 (bool verbose)
     if ( verbose )
         log_debug ("Test4: save/load test");
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
+    char *test_state_file = zsys_sprintf ("%s/state_file_test4", SELFTEST_DIR_RW);
+    assert (test_state_file != NULL);
+    char *test_state_file1 = zsys_sprintf ("%s/state_file_test4-1", SELFTEST_DIR_RW);
+    assert (test_state_file1 != NULL);
+
     data_t *self = NULL;
     data_t *self_load = NULL;
     fty_proto_t *asset = NULL;
@@ -882,9 +898,9 @@ test4 (bool verbose)
     // just ipc_name
     self = data_new ();
     data_set_ipc (self, "IPC");
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
+    self_load = data_load (test_state_file);
 
     data_compare (self, self_load, verbose);
     data_destroy (&self);
@@ -895,9 +911,9 @@ test4 (bool verbose)
     self = data_new ();
     data_asset_store (self, &asset);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
+    self_load = data_load (test_state_file);
 
     data_compare (self, self_load, verbose);
     data_destroy (&self);
@@ -911,9 +927,9 @@ test4 (bool verbose)
 
     data_asset_store (self, &asset);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
+    self_load = data_load (test_state_file);
 
     data_compare (self, self_load, verbose);
     data_destroy (&self);
@@ -927,9 +943,9 @@ test4 (bool verbose)
 
     data_asset_store (self, &asset);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
+    self_load = data_load (test_state_file);
 
     data_compare (self, self_load, verbose);
     data_destroy (&self);
@@ -964,19 +980,21 @@ test4 (bool verbose)
     std::set <std::string> metrics {"topic1", "topic2"};
     data_set_produced_metrics (self, metrics);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
+    self_load = data_load (test_state_file);
 
     data_compare (self, self_load, verbose);
 
-    data_save (self_load, "state_file1");
-    data_t *self_load_load = data_load ("state_file1");
+    data_save (self_load, test_state_file1);
+    data_t *self_load_load = data_load (test_state_file1);
     data_compare (self, self_load_load, verbose);
 
     data_destroy (&self);
     data_destroy (&self_load);
     data_destroy (&self_load_load);
+    zstr_free (&test_state_file);
+    zstr_free (&test_state_file1);
 }
 
 static void
