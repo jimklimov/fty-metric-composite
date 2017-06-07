@@ -241,6 +241,20 @@ c_metric_conf_test (bool verbose)
     if ( verbose )
         log_set_level (LOG_DEBUG);
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+    // Note: tests below also assume that "/tmp" exists and is available
+    // for manipulation, and that "/lib" and "/root" dirs exist and are
+    // not available to the testing user/program.
+
     printf (" * c_metric_conf: \n");
     //  @selftest
     //  =================================================================
@@ -263,27 +277,34 @@ c_metric_conf_test (bool verbose)
 
     const char *state_file = c_metric_conf_statefile (self);
     assert (streq (state_file, ""));
+    char *test_state_file = NULL;
 
-    int rv = c_metric_conf_set_statefile (self, "./state_file");
+    test_state_file = zsys_sprintf ("%s/state_file", SELFTEST_DIR_RW);
+    assert (test_state_file != NULL);
+    int rv = c_metric_conf_set_statefile (self, test_state_file);
     assert (rv == 0);
     state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, "./state_file"));
+    assert (streq (state_file, test_state_file));
+    zstr_free (&test_state_file);
 
     rv = c_metric_conf_set_statefile (self, "/tmp/composite-metrics/state_file");
     assert (rv == 0);
     state_file = c_metric_conf_statefile (self);
     assert (streq (state_file, "/tmp/composite-metrics/state_file"));
 
-    rv = c_metric_conf_set_statefile (self, "./test_dir/state_file");
+    test_state_file = zsys_sprintf ("%s/test_dir/state_file", SELFTEST_DIR_RW);
+    assert (test_state_file != NULL);
+    rv = c_metric_conf_set_statefile (self, test_state_file);
     assert (rv == 0);
     state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, "./test_dir/state_file"));
+    assert (streq (state_file, test_state_file));
 
-    // directory
+    // directory (assumed to exist); state_file value shoud remain the same
     rv = c_metric_conf_set_statefile (self, "/lib");
     assert (rv == -1);
     state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, "./test_dir/state_file"));
+    assert (streq (state_file, test_state_file));
+    zstr_free (&test_state_file);
 
     //  =================================================================
     if ( verbose )
