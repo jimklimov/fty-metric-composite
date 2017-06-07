@@ -275,6 +275,17 @@ fty_metric_composite_server_test (bool verbose)
         log_set_level (LOG_DEBUG);
     static const char* endpoint = "inproc://bios-cm-server-test";
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
     printf (" * fty_composite_metrics_server: ");
     if (verbose)
         printf ("\n");
@@ -302,8 +313,11 @@ fty_metric_composite_server_test (bool verbose)
     if (verbose)
         zstr_send (cm_server, "VERBOSE");
     zstr_sendx (cm_server, "CONNECT", endpoint, NULL);
-    zstr_sendx (cm_server, "CONFIG", "src/fty-metric-composite.cfg.example", NULL);
+    char *test_config_file = zsys_sprintf ("%s/fty-metric-composite.cfg.example", SELFTEST_DIR_RO);
+    assert (test_config_file != NULL);
+    zstr_sendx (cm_server, "CONFIG", test_config_file, NULL);
     zclock_sleep (500);   //THIS IS A HACK TO SETTLE DOWN THINGS
+    zstr_free (&test_config_file);
 
     // send one value
     zmsg_t *msg_in;
