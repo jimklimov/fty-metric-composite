@@ -591,6 +591,8 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
     char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
     assert (test_state_file != NULL);
+    char *test_state_dir = zsys_sprintf ("%s/test_dir", SELFTEST_DIR_RW);
+    assert (test_state_dir != NULL);
 
     printf (" * fty_metric_composite_configurator_server: ");
     if (verbose)
@@ -616,9 +618,12 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (configurator);
     zclock_sleep (100);
     // As directory MUST exist -> create in advance!
-    int r = system ("mkdir -p ./test_dir");
+    char *cmdarg = zsys_sprintf ("mkdir -p %s", test_state_dir);
+    assert (cmdarg != NULL);
+    int r = system (cmdarg);
     assert ( r != -1 ); // make debian g++ happy
-    zstr_sendx (configurator, "CFG_DIRECTORY", "./test_dir", NULL);
+    zstr_free (&cmdarg);
+    zstr_sendx (configurator, "CFG_DIRECTORY", test_state_dir, NULL);
     zstr_sendx (configurator, "STATE_FILE", test_state_file, NULL);
     zstr_sendx (configurator, "CONNECT", endpoint, NULL);
     zstr_sendx (configurator, "CONSUMER", "ASSETS", ".*", NULL);
@@ -1044,7 +1049,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
 //            "Curie-humidity.cfg"
         };
 
-        int rv = test_dir_contents ("./test_dir", expected_configs);
+        int rv = test_dir_contents (test_state_dir, expected_configs);
         printf ("rv == %d\n", rv);
         assert (rv == 0);
         printf ("Test block -1- Ok\n");
@@ -1308,7 +1313,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
 //            "Curie-humidity.cfg"
         };
 
-        int rv = test_dir_contents ("./test_dir", expected_configs);
+        int rv = test_dir_contents (test_state_dir, expected_configs);
         printf ("rv == %d\n", rv);
         assert (rv == 0);
 
@@ -1411,7 +1416,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
             "Lazer game-humidity.cfg"
         };
 
-        int rv = test_dir_contents ("./test_dir", expected_configs);
+        int rv = test_dir_contents (test_state_dir, expected_configs);
         printf ("rv == %d\n", rv);
         assert (rv == 0);
 
@@ -1452,6 +1457,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     }*/
 
     zstr_free (&test_state_file);
+    zstr_free (&test_state_dir);
     mlm_client_destroy (&producer);
     mlm_client_destroy (&alert_generator);
     zactor_destroy (&configurator);
