@@ -54,6 +54,7 @@ config.log
 config.status
 config/
 configure
+configure.lineno
 libtool
 src/platform.h
 src/platform.h.in
@@ -61,11 +62,6 @@ src/platform.h.in~
 src/stamp-h1
 src/test-suite.log
 src/.dirstamp
-
-# CMake
-CMakeLists.txt
-*.cmake
-builds/cmake/
 
 # CMake cache
 CMakeCache.txt
@@ -76,6 +72,9 @@ compile_commands.json
 DartConfiguration.tcl
 install_manifest.txt
 Testing/
+CMakeLists.txt
+*.cmake
+builds/cmake/
 
 # Repositories downloaded by CI integration scripts
 libzmq/
