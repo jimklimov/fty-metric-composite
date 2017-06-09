@@ -175,7 +175,7 @@ data_reassign_sensors (data_t *self, bool is_propagation_needed)
         }
         // We do not allow sensors to be logically assigned to any device or group
         const char *logical_asset_type = fty_proto_aux_string (logical_asset, "type", "");
-        if ( streq (logical_asset_type, "device") || 
+        if ( streq (logical_asset_type, "device") ||
              streq (logical_asset_type, "group" ) )
         {
             log_error ("Sensor '%s' is logically assigned to '%s' -> skip it", one_sensor_name, logical_asset_type);
@@ -305,11 +305,11 @@ s_check_sensor_correctness (data_t *self, fty_proto_t *sensor)
                 fty_proto_name (sensor), "parent_name.1", "aux");
         return;
     }
-    
+
     if (!logical_asset) {
         log_error (
                 "Sensor='%s':Attribute '%s' is missing from '%s' field in the message.",
-                fty_proto_name (sensor), "logical_asset", "ext"); 
+                fty_proto_name (sensor), "logical_asset", "ext");
         return;
     }
 
@@ -430,9 +430,9 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
     }
 
     if (streq (operation, FTY_PROTO_ASSET_OP_CREATE) ) {
-        if ( streq (type, "datacenter") || 
-             streq (type, "room") || 
-             streq (type, "row") || 
+        if ( streq (type, "datacenter") ||
+             streq (type, "room") ||
+             streq (type, "row") ||
              streq (type, "rack") )
         {
             // always do reconfiguration
@@ -455,9 +455,9 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
         return true;
     } else
     if ( streq (operation, FTY_PROTO_ASSET_OP_UPDATE) ) {
-        if ( streq (type, "datacenter") || 
-             streq (type, "room") || 
-             streq (type, "row") || 
+        if ( streq (type, "datacenter") ||
+             streq (type, "room") ||
+             streq (type, "row") ||
              streq (type, "rack") )
         {
             // So, if NOT "device" is UPDATED -> do reconfiguration only if TOPOLGY had changed
@@ -479,7 +479,7 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
             // store it in any case, because we cannot ignore message on UPDATE operation,
             // Because if we ignore this message -> everything would be configured
             // with old information which is already obsolete
-            
+
             // do reconfiguration only if important info changes
             // Look for the asset
             fty_proto_t *asset = (fty_proto_t*) zhashx_lookup (self->all_assets, fty_proto_name (message));
@@ -874,17 +874,33 @@ test4 (bool verbose)
 {
     if ( verbose )
         log_debug ("Test4: save/load test");
-         
+
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
+    char *test_state_file = zsys_sprintf ("%s/state_file_test4", SELFTEST_DIR_RW);
+    assert (test_state_file != NULL);
+    char *test_state_file1 = zsys_sprintf ("%s/state_file_test4-1", SELFTEST_DIR_RW);
+    assert (test_state_file1 != NULL);
+
     data_t *self = NULL;
     data_t *self_load = NULL;
     fty_proto_t *asset = NULL;
-    
+
     // just ipc_name
     self = data_new ();
     data_set_ipc (self, "IPC");
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
+    self_load = data_load (test_state_file);
 
     data_compare (self, self_load, verbose);
     data_destroy (&self);
@@ -894,11 +910,11 @@ test4 (bool verbose)
     asset = test_asset_new ("some_asset", FTY_PROTO_ASSET_OP_CREATE);
     self = data_new ();
     data_asset_store (self, &asset);
-    
-    data_save (self, "state_file");
 
-    self_load = data_load ("state_file");
-    
+    data_save (self, test_state_file);
+
+    self_load = data_load (test_state_file);
+
     data_compare (self, self_load, verbose);
     data_destroy (&self);
     data_destroy (&self_load);
@@ -911,10 +927,10 @@ test4 (bool verbose)
 
     data_asset_store (self, &asset);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
-    
+    self_load = data_load (test_state_file);
+
     data_compare (self, self_load, verbose);
     data_destroy (&self);
     data_destroy (&self_load);
@@ -927,17 +943,17 @@ test4 (bool verbose)
 
     data_asset_store (self, &asset);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
-    
+    self_load = data_load (test_state_file);
+
     data_compare (self, self_load, verbose);
     data_destroy (&self);
     data_destroy (&self_load);
 
     // three assets + reassign + metrics
     self = data_new ();
-    
+
     asset = test_asset_new ("TEST4_DC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_ext_insert (asset, "type", "%s", "datacenter");
     fty_proto_ext_insert (asset, "subtype", "%s", "unknown");
@@ -959,24 +975,26 @@ test4 (bool verbose)
     fty_proto_ext_insert (asset, "sensor_function", "%s", "input");
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST4_RACK");
     data_asset_store (self, &asset);
-    
+
     data_reassign_sensors (self, true);
     std::set <std::string> metrics {"topic1", "topic2"};
     data_set_produced_metrics (self, metrics);
 
-    data_save (self, "state_file");
+    data_save (self, test_state_file);
 
-    self_load = data_load ("state_file");
-    
+    self_load = data_load (test_state_file);
+
     data_compare (self, self_load, verbose);
-    
-    data_save (self_load, "state_file1");
-    data_t *self_load_load = data_load ("state_file1");
+
+    data_save (self_load, test_state_file1);
+    data_t *self_load_load = data_load (test_state_file1);
     data_compare (self, self_load_load, verbose);
 
     data_destroy (&self);
     data_destroy (&self_load);
     data_destroy (&self_load_load);
+    zstr_free (&test_state_file);
+    zstr_free (&test_state_file1);
 }
 
 static void
@@ -984,7 +1002,7 @@ test5 (bool verbose)
 {
     if ( verbose )
         log_debug ("Test5: Sensor arrived before logical asset for CREATE operation");
-    
+
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
     zlistx_t *sensors = NULL;
@@ -994,7 +1012,7 @@ test5 (bool verbose)
     zlistx_set_duplicator (assets_expected, (czmq_duplicator *) strdup);
     zlistx_set_comparator (assets_expected, (czmq_comparator *) strcmp);
 
-    // TOPOLOGY: 
+    // TOPOLOGY:
     // DC->ROOM->ROW->RACK->UPS->SENSOR
     if ( verbose )
         log_debug ("\tCREATE 'TEST5_DC' as datacenter");
@@ -1051,7 +1069,7 @@ test5 (bool verbose)
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST5_RACK");
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == true );
-    
+
     // test assigned sensors: propagated
     data_reassign_sensors (self, true);
     assert ( data_is_reconfig_needed (self) == true );
@@ -1063,7 +1081,7 @@ test5 (bool verbose)
     assert ( sensors == NULL );
     sensors = data_get_assigned_sensors (self, "TEST5_RACK", NULL);
     assert ( sensors == NULL );
- 
+
     // test assigned sensors: NOT propagated
     data_reassign_sensors (self, false);
     assert ( data_is_reconfig_needed (self) == true );
@@ -1075,7 +1093,7 @@ test5 (bool verbose)
     assert ( sensors == NULL );
     sensors = data_get_assigned_sensors (self, "TEST5_RACK", NULL);
     assert ( sensors == NULL );
- 
+
     // test that all messages expected to be store are really stores
     zlistx_add_end (assets_expected, (void *) "TEST5_SENSOR");
     {
@@ -1481,9 +1499,9 @@ test8 (bool verbose)
     item = (fty_proto_t *) zlistx_next (sensors);
     const char *name2 = fty_proto_name (item);
     assert
-        (   (streq(name1, "TEST8_SENSOR01") || (streq(name2, "TEST8_SENSOR02")) ) 
+        (   (streq(name1, "TEST8_SENSOR01") || (streq(name2, "TEST8_SENSOR02")) )
             ||
-            (streq(name1, "TEST8_SENSOR02") || (streq(name2, "TEST8_SENSOR01")) ) 
+            (streq(name1, "TEST8_SENSOR02") || (streq(name2, "TEST8_SENSOR01")) )
         );
     zlistx_destroy (&sensors);
 
@@ -1516,12 +1534,12 @@ test9 (bool verbose)
 {
     if ( verbose )
         log_debug ("Test9: Check that sensor logically assigned to device/group is skipped");
-    
+
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
     zlistx_t *sensors = NULL;
 
-    // Physical topology: 
+    // Physical topology:
     // DC->RACK->UPS->SENSOR01
     //         ->RC ->SENSOR02
     //   ->GROUP
@@ -1618,12 +1636,12 @@ test9 (bool verbose)
     assert ( sensors != NULL );
     assert (zlistx_size (sensors) == 1);
     zlistx_destroy (&sensors);
-    
+
     sensors = data_get_assigned_sensors (self, "TEST9_RACK", NULL);
     assert ( sensors != NULL );
     assert (zlistx_size (sensors) == 1);
     zlistx_destroy (&sensors);
- 
+
     sensors = data_get_assigned_sensors (self, "TEST9_GROUP", NULL);
     assert ( sensors == NULL );
 
@@ -1656,7 +1674,7 @@ test10 (bool verbose)
 {
     if ( verbose )
         log_debug ("Test10: Check that UPDATE sensor will trigger reconfig only if needed");
-    
+
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
 
@@ -1692,7 +1710,7 @@ test10 (bool verbose)
     assert ( data_is_reconfig_needed (self) == true );
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
-    
+
     if ( verbose ) {
         log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
         log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
@@ -1848,7 +1866,7 @@ test11 (bool verbose)
 {
     if ( verbose )
         log_debug ("Test11: Check that UPDATE container will trigger reconfig only if needed");
-    
+
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
 
@@ -2059,7 +2077,7 @@ test11 (bool verbose)
     assert ( data_is_reconfig_needed (self) == true );
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
-   
+
     if ( verbose ) {
         log_debug ("\tUPDATE 'TEST11_RACK' as rack");
         log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
@@ -2139,7 +2157,7 @@ test11 (bool verbose)
     assert ( data_is_reconfig_needed (self) == true );
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
-   
+
     data_destroy (&self);
 }
 
@@ -2177,7 +2195,7 @@ data_test (bool verbose)
     zlistx_set_duplicator (assets_expected, (czmq_duplicator *) strdup);
 
     zlistx_set_comparator (assets_expected, (czmq_comparator *) strcmp);
-    fty_proto_t *item = NULL; 
+    fty_proto_t *item = NULL;
     fty_proto_t *asset = NULL;
 
     if ( verbose )
@@ -2582,9 +2600,9 @@ data_test (bool verbose)
         item = (fty_proto_t *) zlistx_next (sensors);
         const char *name2 = fty_proto_name (item);
         assert
-            (   (streq(name1, "Sensor13") || (streq(name2, "Sensor15")) ) 
+            (   (streq(name1, "Sensor13") || (streq(name2, "Sensor15")) )
               ||
-                (streq(name1, "Sensor15") || (streq(name2, "Sensor13")) ) 
+                (streq(name1, "Sensor15") || (streq(name2, "Sensor13")) )
             );
         zlistx_destroy (&sensors);
 
