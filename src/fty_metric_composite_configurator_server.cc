@@ -1,21 +1,21 @@
 /*  =========================================================================
     fty_metric_composite_configurator_server - Composite metrics server configurator
 
-    Copyright (C) 2014 - 2017 Eaton                                        
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2014 - 2017 Eaton
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -174,10 +174,10 @@ s_generate_and_start (const char *path_to_dir, const char *sensor_function, cons
             fty_proto_ext_string (item, "port", "(unknown)") +
             "@" +
             fty_proto_aux_string (item, "parent_name.1", "(unknown)");
-        
+
         temp_in += "\"" + temp_topic + "\"";
-        
-        
+
+
         std::string hum_topic = std::string("humidity.") +
             fty_proto_ext_string (item, "port", "(unknown)") +
             "@" +
@@ -574,7 +574,7 @@ test_dir_contents (
 void
 fty_metric_composite_configurator_server_test (bool verbose)
 {
-    if ( verbose ) 
+    if ( verbose )
         log_set_level (LOG_DEBUG);
     static const char* endpoint = "inproc://bios-composite-configurator-server-test";
 
@@ -1040,7 +1040,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
             "Rack02-input-temperature.cfg",
             "Rack02-input-humidity.cfg",
             "Rack02-output-temperature.cfg",
-            "Rack02-output-humidity.cfg" 
+            "Rack02-output-humidity.cfg"
             // BIOS-2484: sensors assigned to non-racks are ignored
 //,
 //            "Curie.Row02-temperature.cfg",
@@ -1392,7 +1392,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     printf ("TRACE CREATE nas rack controller\n");
     asset = test_asset_new ("nas rack controller", FTY_PROTO_ASSET_OP_CREATE); // 12
     fty_proto_aux_insert (asset, "type", "%s", "device");
-    fty_proto_aux_insert (asset, "subtype", "%s", "rack controller");
+    fty_proto_aux_insert (asset, "subtype", "%s", "rackcontroller");
     fty_proto_aux_insert (asset, "parent", "%s", "5");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01");
     zmessage = fty_proto_encode (&asset);
