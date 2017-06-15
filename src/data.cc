@@ -423,7 +423,7 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
 
     const char *subtype = fty_proto_aux_string (message, "subtype", "");
 
-    if (streq (subtype, "rack controller")) {
+    if (streq (subtype, "rack controller") || streq (subtype, "rackcontroller")) {
         if (!data_get_ipc (self) || !streq (data_get_ipc (self), name))
             self->is_reconfig_needed = true;
         data_set_ipc (self, name);
@@ -1580,7 +1580,7 @@ test9 (bool verbose)
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_RACK");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST9_DC");
     fty_proto_aux_insert (asset, "type", "%s", "device");
-    fty_proto_aux_insert (asset, "subtype", "%s", "rack controller");
+    fty_proto_aux_insert (asset, "subtype", "%s", "rackcontroller");
     data_asset_store (self, &asset);
 
     if ( verbose )
@@ -2540,7 +2540,7 @@ data_test (bool verbose)
         int rv = test_zlistx_compare (assets_expected, &received, verbose);
         assert (rv == 0);
 
-        // check functionality of the data_asset 
+        // check functionality of the data_asset
         asset = data_asset (self, "TEST1_DC");
         assert (asset);
         assert (streq (fty_proto_aux_string (asset, "type", ""), "datacenter"));
@@ -3148,7 +3148,7 @@ data_test (bool verbose)
         log_debug ("\tCREATE 'nas rack constroller' as rack controller");
     asset = test_asset_new ("nas rack controller", FTY_PROTO_ASSET_OP_CREATE); // 12
     fty_proto_aux_insert (asset, "type", "%s", "device");
-    fty_proto_aux_insert (asset, "subtype", "%s", "rack controller");
+    fty_proto_aux_insert (asset, "subtype", "%s", "rackcontroller");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01");
     data_asset_store (self, &asset);
     data_reassign_sensors (self, true);
