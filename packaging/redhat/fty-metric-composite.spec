@@ -33,7 +33,7 @@ Version:        1.0.0
 Release:        1
 Summary:        agent that computes new metrics from bunch of other metrics
 License:        GPL-2.0+
-URL:            http://example.com/
+URL:            https://42ity.org
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
 # Note: ghostscript is required by graphviz which is required by
