@@ -145,7 +145,7 @@ data_reassign_sensors (data_t *self, bool is_propagation_needed)
         // discover the sub-type of the asset
         const char *subtype = fty_proto_aux_string (one_sensor, "subtype", "");
         // check if it is sensor or not
-        if ( !streq (subtype, "sensor") || streq (subtype, "sensorgpio")) {
+        if ( !streq (subtype, "sensor") || !streq (subtype, "sensorgpio")) {
             // if it is NOT sensor -> do nothing!
             // and we can move to next one
             one_sensor_name = (char *) zlistx_next (asset_names);
