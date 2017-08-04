@@ -526,7 +526,7 @@ test_dir_contents (
         const std::string& directory,
         std::vector <std::string>& expected)
 {
-    printf ("test_dir_contents (): start\n");
+    printf ("test_dir_contents (): start in %s\n", directory.c_str());
     zdir_t *dir = zdir_new (directory.c_str (), "-");
     assert (dir);
 
@@ -578,6 +578,12 @@ fty_metric_composite_configurator_server_test (bool verbose)
         log_set_level (LOG_DEBUG);
     static const char* endpoint = "inproc://bios-composite-configurator-server-test";
 
+    //  @selftest
+
+    printf (" * fty_metric_composite_configurator_server: ");
+    if (verbose)
+        printf ("\n");
+
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
     // do so under src/selftest-rw. They are defined below along with a
@@ -593,12 +599,6 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (test_state_file != NULL);
     char *test_state_dir = zsys_sprintf ("%s/test_dir", SELFTEST_DIR_RW);
     assert (test_state_dir != NULL);
-
-    printf (" * fty_metric_composite_configurator_server: ");
-    if (verbose)
-        printf ("\n");
-
-    //  @selftest
 
     zactor_t *server = zactor_new (mlm_server, (void*) "Malamute");
     zstr_sendx (server, "BIND", endpoint, NULL);
@@ -617,12 +617,20 @@ fty_metric_composite_configurator_server_test (bool verbose)
     zactor_t *configurator = zactor_new (fty_metric_composite_configurator_server, (void*) "configurator");
     assert (configurator);
     zclock_sleep (100);
+
     // As directory MUST exist -> create in advance!
-    char *cmdarg = zsys_sprintf ("mkdir -p %s", test_state_dir);
-    assert (cmdarg != NULL);
-    int r = system (cmdarg);
-    assert ( r != -1 ); // make debian g++ happy
-    zstr_free (&cmdarg);
+    // Make sure old aborted tests do not hinder us
+    zdir_t *dir = zdir_new (test_state_dir, NULL);
+    if (dir) {
+        zdir_remove (dir, true);
+        zdir_destroy (&dir);
+    }
+    zsys_file_delete (test_state_file);
+    zsys_dir_delete  (test_state_dir);
+
+    //  Create temporary directory for test files
+    zsys_dir_create (test_state_dir);
+
     zstr_sendx (configurator, "CFG_DIRECTORY", test_state_dir, NULL);
     zstr_sendx (configurator, "STATE_FILE", test_state_file, NULL);
     zstr_sendx (configurator, "CONNECT", endpoint, NULL);
