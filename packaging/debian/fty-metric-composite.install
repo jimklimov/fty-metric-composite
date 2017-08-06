@@ -1,7 +1,5 @@
 usr/bin/fty-metric-composite
-usr/share/man/man1/fty-metric-composite.1
 usr/bin/fty-metric-composite-configurator
-usr/share/man/man1/fty-metric-composite-configurator.1
 etc/fty-metric-composite/fty-metric-composite.cfg
 lib/systemd/system/fty-metric-composite@.service
 etc/fty-metric-composite/fty-metric-composite-configurator.cfg
