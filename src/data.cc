@@ -145,7 +145,7 @@ data_reassign_sensors (data_t *self, bool is_propagation_needed)
         // discover the sub-type of the asset
         const char *subtype = fty_proto_aux_string (one_sensor, "subtype", "");
         // check if it is sensor or not
-        if ( !streq (subtype, "sensor") && !streq (subtype, "sensorgpio")) {
+        if ( !streq (subtype, "sensor") ) {
             // if it is NOT sensor -> do nothing!
             // and we can move to next one
             one_sensor_name = (char *) zlistx_next (asset_names);
@@ -438,10 +438,9 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
             // always do reconfiguration
             self->is_reconfig_needed = true;
         } else
-        if ( streq (subtype, "sensor") ||
-             streq (subtype, "sensorgpio")) {
+        if ( streq (subtype, "sensor")) {
             // lets check, that sensor has all necessary information
-            // So, we have "device" and it is "sensor"/"sensorgpio"!
+            // So, we have "device" and it is "sensor"!
             s_check_sensor_correctness (self, message);
             // store it in any case, because we cannot ignore message on UPDATE operation,
             // and in order to be consistent do not ignore it ere on CREATE operation
@@ -473,8 +472,7 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
                 }
             }
         } else
-        if ( streq (subtype, "sensor") ||
-             streq (subtype, "sensorgpio")) {
+        if ( streq (subtype, "sensor")) {
             // So, we have "device" and it is "sensor"!
             // lets check, that sensor has all necessary information
             s_check_sensor_correctness (self, message);
