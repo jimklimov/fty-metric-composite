@@ -1066,6 +1066,7 @@ retry_block_1:
             printf ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
             sleep (retry);
             retry = 0;
+            printf ("Checking the directory again...");
             goto retry_block_1;
         }
 
