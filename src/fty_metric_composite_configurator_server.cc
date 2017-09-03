@@ -1037,8 +1037,11 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
     printf ("TRACE ---===### (Test block -1-) ###===---\n");
     {
+        uint64_t retry = 20000;
         printf ("Sleeping 1m for configurator kick in and finish\n");
         zclock_sleep (60000); // magical constant
+
+retry_block_1:
 
         std::vector <std::string> expected_configs = {
             "Rack01-input-temperature.cfg",
@@ -1059,6 +1062,13 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
         int rv = test_dir_contents (test_state_dir, expected_configs);
         printf ("rv == %d\n", rv);
+        if ( rv != 0 && retry > 0) {
+            printf ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
+            sleep (retry);
+            retry = 0;
+            goto retry_block_1;
+        }
+
         assert (rv == 0);
         printf ("Test block -1- Ok\n");
     }
