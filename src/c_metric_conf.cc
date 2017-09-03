@@ -299,7 +299,7 @@ c_metric_conf_test (bool verbose)
     state_file = c_metric_conf_statefile (self);
     assert (streq (state_file, test_state_file));
 
-    // directory (assumed to exist); state_file value shoud remain the same
+    // directory (assumed to exist); state_file value should remain the same
     rv = c_metric_conf_set_statefile (self, "/lib");
     assert (rv == -1);
     state_file = c_metric_conf_statefile (self);
