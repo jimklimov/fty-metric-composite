@@ -28,6 +28,7 @@
 %else
 %define DRAFTS no
 %endif
+%define SYSTEMD_UNIT_DIR %(pkg-config --variable=systemdsystemunitdir systemd)
 Name:           fty-metric-composite
 Version:        1.0.0
 Release:        1
@@ -50,6 +51,7 @@ BuildRequires:  systemd
 %{?systemd_requires}
 BuildRequires:  xmlto
 BuildRequires:  gcc-c++
+BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
@@ -80,6 +82,7 @@ This package contains shared library for fty-metric-composite: agent that comput
 Summary:        agent that computes new metrics from bunch of other metrics
 Group:          System/Libraries
 Requires:       libfty_metric_composite0 = %{version}
+Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
@@ -100,6 +103,7 @@ This package contains development files for fty-metric-composite: agent that com
 %{_mandir}/man7/*
 
 %prep
+
 %setup -q
 
 %build
@@ -122,9 +126,9 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/fty-metric-composite-configurator
 %{_mandir}/man1/fty-metric-composite-configurator*
 %config(noreplace) %{_sysconfdir}/fty-metric-composite/fty-metric-composite.cfg
-/usr/lib/systemd/system/fty-metric-composite@.service
+%{SYSTEMD_UNIT_DIR}/fty-metric-composite@.service
 %config(noreplace) %{_sysconfdir}/fty-metric-composite/fty-metric-composite-configurator.cfg
-/usr/lib/systemd/system/fty-metric-composite-configurator.service
+%{SYSTEMD_UNIT_DIR}/fty-metric-composite-configurator.service
 %dir %{_sysconfdir}/fty-metric-composite
 %if 0%{?suse_version} > 1315
 %post

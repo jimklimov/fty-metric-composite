@@ -61,6 +61,9 @@
 #       define FTY_METRIC_COMPOSITE_EXPORT __declspec(dllimport)
 #   endif
 #   define FTY_METRIC_COMPOSITE_PRIVATE
+#elif defined (__CYGWIN__)
+#   define FTY_METRIC_COMPOSITE_EXPORT
+#   define FTY_METRIC_COMPOSITE_PRIVATE
 #else
 #   define FTY_METRIC_COMPOSITE_EXPORT
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER

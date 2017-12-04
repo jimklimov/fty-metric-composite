@@ -81,7 +81,7 @@ fty-metric-composite-configurator.txt: $(top_srcdir)/src/fty_metric_composite_co
 	"$(srcdir)/mkman" "fty_metric_composite_configurator" "$(builddir)/fty-metric-composite-configurator.txt" "$(srcdir)/.."
 
 
-clean:
+clean-local:
 	rm -f *.1 *.3 *.7 $(GENERATED_DOCS)
 
 doc: $(GENERATED_DOCS)

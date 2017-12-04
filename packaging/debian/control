@@ -21,9 +21,10 @@ Source:         fty-metric-composite
 Section:        net
 Priority:       optional
 Maintainer:     fty-metric-composite Developers <eatonipcopensource@eaton.com>
-Standards-Version: 4.0.0
+Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
+    libsodium-dev,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
@@ -47,6 +48,7 @@ Architecture: any
 Section: libdevel
 Depends:
     ${misc:Depends},
+    libsodium-dev,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
@@ -68,7 +70,7 @@ Description: runnable binaries from fty-metric-composite
 Package: fty-metric-composite-dbg
 Architecture: any
 Section: debug
-Priority: extra
+Priority: optional
 Depends:
     fty-metric-composite (= ${binary:Version}),
     ${misc:Depends}
