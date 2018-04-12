@@ -436,7 +436,7 @@ actor_commands_test (bool verbose)
     assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
-    // CFG_DIRECTORY
+    // CFG_DIRECTORY, expected writable (current builddir of course is, right?)
     message = zmsg_new ();
     assert (message);
     zmsg_addstr (message, "CFG_DIRECTORY");
@@ -447,16 +447,19 @@ actor_commands_test (bool verbose)
     assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), "./"));
 
-    // CFG_DIRECTORY
+    // CFG_DIRECTORY, expected writable
+    // Note: the (originally non-absolute) config path is still stored
+    // relative to process CWD at least currently, not sure this is a
+    // good thing - but it is expected according to original tests.
     message = zmsg_new ();
     assert (message);
     zmsg_addstr (message, "CFG_DIRECTORY");
-    zmsg_addstr (message, "../");
+    zmsg_addstr (message, SELFTEST_DIR_RW);
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
     assert (streq (c_metric_conf_statefile (cfg), test_state_file));
-    assert (streq (c_metric_conf_cfgdir (cfg), "../"));
+    assert (streq (c_metric_conf_cfgdir (cfg), SELFTEST_DIR_RW));
 
     zmsg_destroy (&message);
     c_metric_conf_destroy (&cfg);
