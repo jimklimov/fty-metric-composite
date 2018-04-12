@@ -215,7 +215,8 @@ c_metric_conf_cfgdir (c_metric_conf_t *self)
 
 //  --------------------------------------------------------------------------
 //  Set configuration directory path
-//  Directory MUST exist! If directory doesn't exist -> error
+//  Directory (full path from FS root) MUST exist and be writable!
+//  If directory doesn't exist -> error
 //  0 - success, -1 - error
 
 int
@@ -225,10 +226,14 @@ c_metric_conf_set_cfgdir (c_metric_conf_t *self, const char *path)
     assert (path);
     zdir_t *dir = zdir_new (path, "-");
     if (!dir) {
-        log_error ("zdir_new ('%s', \"-\") failed.", path);
+        log_error ("zdir_new ('%s', \"-\") failed - full path does not exist.", path);
         return -1;
     }
     zdir_destroy (&dir);
+    if(access(path, W_OK) != 0) {
+        log_error ("access ('%s') failed - directory is not writable.", path);
+        return -1;
+    }
     zstr_free (&self->configuration_dir);
     self->configuration_dir = strdup (path);
     log_debug ("Configuration dir is set: '%s'", path);
@@ -318,8 +323,8 @@ c_metric_conf_test (bool verbose)
     cfgdir = c_metric_conf_cfgdir (self);
     assert (streq (cfgdir, "/tmp"));
 
-    // non-writable directory
-    rv = c_metric_conf_set_cfgdir (self, "/root");
+    // non-writable directory (assuming current user is not root)
+    rv = c_metric_conf_set_cfgdir (self, "/etc");
     assert (rv == -1);
     cfgdir = c_metric_conf_cfgdir (self);
     assert (streq (cfgdir, "/tmp"));
