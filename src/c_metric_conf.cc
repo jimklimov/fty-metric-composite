@@ -285,6 +285,8 @@ c_metric_conf_test (bool verbose)
     const char *state_file = c_metric_conf_statefile (self);
     assert (streq (state_file, ""));
     char *test_state_file = NULL;
+    char *test_state_dir = zsys_sprintf ("%s/test_dir", SELFTEST_DIR_RW);
+    assert (test_state_dir != NULL);
 
     test_state_file = zsys_sprintf ("%s/state_file", SELFTEST_DIR_RW);
     assert (test_state_file != NULL);
@@ -294,17 +296,22 @@ c_metric_conf_test (bool verbose)
     assert (streq (state_file, test_state_file));
     zstr_free (&test_state_file);
 
-    rv = c_metric_conf_set_statefile (self, "/tmp/composite-metrics/state_file");
+    test_state_file = (char *)"/tmp/composite-metrics/state_file";
+    rv = c_metric_conf_set_statefile (self, test_state_file);
     assert (rv == 0);
     state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, "/tmp/composite-metrics/state_file"));
+    assert (streq (state_file, test_state_file));
 
-    test_state_file = zsys_sprintf ("%s/test_dir/state_file", SELFTEST_DIR_RW);
+    // Make sure we can create a directory to hold the statefile, if asked to
+    zsys_dir_delete (test_state_dir);
+    test_state_file = zsys_sprintf ("%s/state_file", test_state_dir);
     assert (test_state_file != NULL);
     rv = c_metric_conf_set_statefile (self, test_state_file);
     assert (rv == 0);
     state_file = c_metric_conf_statefile (self);
     assert (streq (state_file, test_state_file));
+    zsys_file_delete (test_state_file);
+    zsys_dir_delete (test_state_dir);
 
     // directory (assumed to exist); state_file value should remain the same
     rv = c_metric_conf_set_statefile (self, "/lib");
@@ -337,6 +344,9 @@ c_metric_conf_test (bool verbose)
         assert (streq (cfgdir, "/tmp"));
     } // if root
     } // scope
+
+    zsys_dir_delete (test_state_dir);
+    zstr_free (&test_state_dir);
 
     c_metric_conf_destroy (&self);
     //  @end

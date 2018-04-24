@@ -464,6 +464,7 @@ actor_commands_test (bool verbose)
     zmsg_destroy (&message);
     c_metric_conf_destroy (&cfg);
     data_destroy (&data);
+    zsys_file_delete (test_state_file);
     zstr_free (&test_state_file);
     zactor_destroy (&malamute);
     //  @end
