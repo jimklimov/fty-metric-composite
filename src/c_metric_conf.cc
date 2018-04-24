@@ -29,6 +29,8 @@
 */
 
 #include "fty_metric_composite_classes.h"
+#include <unistd.h>
+#include <sys/types.h>
 
 struct _c_metric_conf_t {
     bool verbose;                   // is server verbose?
@@ -323,12 +325,18 @@ c_metric_conf_test (bool verbose)
     cfgdir = c_metric_conf_cfgdir (self);
     assert (streq (cfgdir, "/tmp"));
 
-    // non-writable directory (assuming current user is not root)
-    rv = c_metric_conf_set_cfgdir (self, "/etc");
-    assert (rv == -1);
-    cfgdir = c_metric_conf_cfgdir (self);
-    assert (streq (cfgdir, "/tmp"));
-    }
+    if ( 0 == getuid() || 0 == geteuid() ) {
+        if (verbose)
+            log_debug("Skipping non-writable directory test for an apparently root caller");
+    } else {
+        if (verbose)
+            log_debug("Non-writable directory test (assuming current user is not root)");
+        rv = c_metric_conf_set_cfgdir (self, "/etc");
+        assert (rv == -1);
+        cfgdir = c_metric_conf_cfgdir (self);
+        assert (streq (cfgdir, "/tmp"));
+    } // if root
+    } // scope
 
     c_metric_conf_destroy (&self);
     //  @end
