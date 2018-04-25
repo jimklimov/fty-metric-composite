@@ -993,6 +993,8 @@ test4 (bool verbose)
     data_destroy (&self);
     data_destroy (&self_load);
     data_destroy (&self_load_load);
+    zsys_file_delete (test_state_file);
+    zsys_file_delete (test_state_file1);
     zstr_free (&test_state_file);
     zstr_free (&test_state_file1);
 }

@@ -1071,6 +1071,16 @@ retry_block_1:
         }
 
         assert (rv == 0);
+
+        // Cleanup after the test bit
+        for (std::string &it : expected_configs) {
+            char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
+            assert (expected_filename != NULL);
+            if (verbose) printf("TRACE BLOCK-1 zsys_file_delete('%s')", expected_filename);
+            zsys_file_delete (expected_filename);
+            zstr_free (&expected_filename);
+        }
+
         printf ("Test block -1- Ok\n");
     }
 
@@ -1369,6 +1379,14 @@ retry_block_1:
             zmsg_destroy (&message);
         }
 
+        // Cleanup after the test bit
+        for (std::string &it : expected_configs) {
+            char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
+            assert (expected_filename != NULL);
+            if (verbose) printf("TRACE BLOCK-2 zsys_file_delete('%s')", expected_filename);
+            zsys_file_delete (expected_filename);
+            zstr_free (&expected_filename);
+        }
 
         zlistx_destroy (&expected_unavailable);
 
@@ -1470,17 +1488,37 @@ retry_block_1:
             zstr_free (&part);
             zmsg_destroy (&message);
         }
+
+        // Cleanup after the test bit
+        for (std::string &it : expected_configs) {
+            char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
+            assert (expected_filename != NULL);
+            if (verbose) printf("TRACE BLOCK-3 zsys_file_delete('%s')", expected_filename);
+            zsys_file_delete (expected_filename);
+            zstr_free (&expected_filename);
+        }
+
         zlistx_destroy (&expected_unavailable);
 
         printf ("Test block -3- Ok\n");
     }*/
 
-    zstr_free (&test_state_file);
-    zstr_free (&test_state_dir);
     mlm_client_destroy (&producer);
     mlm_client_destroy (&alert_generator);
     zactor_destroy (&configurator);
     zactor_destroy (&server);
+
+    // Ideally, nothing should be here by now...
+    dir = zdir_new (test_state_dir, NULL);
+    if (dir) {
+        zdir_remove (dir, true);
+        zdir_destroy (&dir);
+    }
+
+    zsys_file_delete (test_state_file);
+    zsys_dir_delete  (test_state_dir);
+    zstr_free (&test_state_file);
+    zstr_free (&test_state_dir);
     //  @end
     printf ("OK\n");
 }
