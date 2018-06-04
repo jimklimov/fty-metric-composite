@@ -8,11 +8,7 @@ DISTCHECK_CONFIGURE_FLAGS = \
 
 ACLOCAL_AMFLAGS = -I config
 
-AM_CFLAGS = \
-    -Werror=format-security
-
 AM_CXXFLAGS = \
-    -Werror=format-security \
     -std=c++11
 
 AM_CPPFLAGS = \
@@ -20,16 +16,19 @@ AM_CPPFLAGS = \
     ${libzmq_CFLAGS} \
     ${czmq_CFLAGS} \
     ${malamute_CFLAGS} \
-    ${lua_5_1_CFLAGS} \
     ${fty_proto_CFLAGS} \
+    ${lua_5_1_CFLAGS} \
     ${cxxtools_CFLAGS} \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${lua_5_1_LIBS} ${fty_proto_LIBS} ${cxxtools_LIBS}
+project_libs = ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${fty_proto_LIBS} ${lua_5_1_LIBS} ${cxxtools_LIBS}
 
 SUBDIRS = doc
+SUBDIRS += include
 DIST_SUBDIRS = doc
+DIST_SUBDIRS += include
+
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -48,9 +47,12 @@ EXTRA_DIST += \
     Findlibzmq.cmake \
     Findczmq.cmake \
     Findmalamute.cmake \
-    Findlua_5_1.cmake \
     Findfty_proto.cmake \
+    Findlua_5_1.cmake \
     Findcxxtools.cmake \
+    builds/cmake/Modules/ClangFormat.cmake \
+    builds/cmake/clang-format-check.sh.in \
+    builds/cmake/Config.cmake.in \
     CMakeLists.txt
 endif
 
@@ -61,6 +63,7 @@ EXTRA_DIST += \
     src/data.h \
     src/proto_metric_unavailable.h \
     src/c_metric_conf.h \
+    README.md \
     src/fty_metric_composite_classes.h
 
 # NOTE: this "include" syntax is not a "make" but an "autotools" keyword,

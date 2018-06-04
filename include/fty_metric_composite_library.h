@@ -1,7 +1,7 @@
 /*  =========================================================================
     fty-metric-composite - generated layer of public API
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@
 //  External dependencies
 #include <czmq.h>
 #include <malamute.h>
-#include <lua.hpp>
 #include <ftyproto.h>
+#include <lua.hpp>
 #include <cxxtools/allocator.h>
 
 //  FTY_METRIC_COMPOSITE version macros for compile-time API detection
@@ -65,11 +65,12 @@
 #   define FTY_METRIC_COMPOSITE_EXPORT
 #   define FTY_METRIC_COMPOSITE_PRIVATE
 #else
-#   define FTY_METRIC_COMPOSITE_EXPORT
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #       define FTY_METRIC_COMPOSITE_PRIVATE __attribute__ ((visibility ("hidden")))
+#       define FTY_METRIC_COMPOSITE_EXPORT __attribute__ ((visibility ("default")))
 #   else
 #       define FTY_METRIC_COMPOSITE_PRIVATE
+#       define FTY_METRIC_COMPOSITE_EXPORT
 #   endif
 #endif
 
@@ -95,9 +96,18 @@ typedef struct _fty_metric_composite_configurator_server_t fty_metric_composite_
 #endif // FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
 
 #ifdef FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //  Self test for private classes
 FTY_METRIC_COMPOSITE_EXPORT void
-    fty_metric_composite_private_selftest (bool verbose);
+    fty_metric_composite_private_selftest (bool verbose, const char *subtest);
+
+#ifdef __cplusplus
+}
+#endif
 #endif // FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
 
 #endif

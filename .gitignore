@@ -1,6 +1,9 @@
 # This is a skeleton created by zproject.
 # You can add hand-written code here.
+### Note: Customized after generation; take care upon regens
+
 save.xml
+
 # Object files
 *.o
 *.so
@@ -30,10 +33,10 @@ src/fty_metric_composite_selftest
 *.app
 core
 
- # Distcheck workspace and archives
-fty-metric-composite-1.0.0/
-fty-metric-composite-1.0.0.tar.gz
-fty-metric-composite-1.0.0.zip
+# Distcheck workspace and archives
+fty-metric-composite-*/
+fty-metric-composite-*.tar.gz
+fty-metric-composite-*.zip
 
 # Man pages
 doc/*.1
@@ -72,9 +75,11 @@ compile_commands.json
 DartConfiguration.tcl
 install_manifest.txt
 Testing/
-CMakeLists.txt
-*.cmake
+
+# CMake in general
 builds/cmake/
+CMake*
+*.cmake
 
 # Repositories downloaded by CI integration scripts
 libsodium/
@@ -102,9 +107,6 @@ project.Makefile
 *.target.mk
 out/
 
-# qt-android build results
-builds/qt-android/prefix
-
 # Android build results
 builds/android/prefix
 
@@ -114,12 +116,7 @@ src/app/gen/
 src/app/obj/
 src/app/local.properties
 
-# Android -dependencies
-builds/android/libsodium
-builds/android/libzmq
-builds/android/czmq
-builds/android/e2fsprogs
-builds/android/zyre
+# Android - dependencies
 src/app/jni/output
 
 # Python build directory
@@ -141,9 +138,13 @@ bindings/qt/selftest/selftest
 *.bak
 .test*
 
+# Netbeans directory
+nbproject/
+
 # editor backups
 *~
 
+### NOTE: The following blocks come from legacy and can hopefully be dropped
 # Archives	
 *.tar.gz
 *.zip

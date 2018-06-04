@@ -1,7 +1,7 @@
 #
 #    fty-metric-composite - Agent that computes new metrics from bunch of other metrics
 #
-#    Copyright (C) 2014 - 2017 Eaton
+#    Copyright (C) 2014 - 2018 Eaton
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -55,8 +55,8 @@ BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
-BuildRequires:  lua-devel
 BuildRequires:  fty-proto-devel
+BuildRequires:  lua-devel
 BuildRequires:  cxxtools-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -86,8 +86,8 @@ Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
-Requires:       lua-devel
 Requires:       fty-proto-devel
+Requires:       lua-devel
 Requires:       cxxtools-devel
 
 %description devel
@@ -120,6 +120,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 
 %files
 %defattr(-,root,root)
+%doc README.md
 %doc COPYING
 %{_bindir}/fty-metric-composite
 %{_mandir}/man1/fty-metric-composite*
