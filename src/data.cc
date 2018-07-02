@@ -429,6 +429,19 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
         data_set_ipc (self, name);
     }
 
+    if (streq (operation, FTY_PROTO_ASSET_OP_DELETE) ||
+        streq (operation, FTY_PROTO_ASSET_OP_RETIRE) || 
+        !streq(fty_proto_aux_string(message, FTY_PROTO_ASSET_STATUS, "active"), "active"))
+    {
+        void *exists = zhashx_lookup (self->all_assets, fty_proto_name (message));
+        if (exists)
+            self->is_reconfig_needed = true;
+        zhashx_delete (self->all_assets, fty_proto_name (message));
+        fty_proto_destroy (message_p);
+        *message_p = NULL;
+        return true;
+    }
+    else
     if (streq (operation, FTY_PROTO_ASSET_OP_CREATE) ) {
         if ( streq (type, "datacenter") ||
              streq (type, "room") ||
@@ -497,17 +510,6 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
             // because they can not impact configuration
         }
         zhashx_update (self->all_assets, fty_proto_name (message), (void *) message);
-        *message_p = NULL;
-        return true;
-    } else
-    if (streq (operation, FTY_PROTO_ASSET_OP_DELETE) ||
-        streq (operation, FTY_PROTO_ASSET_OP_RETIRE))
-    {
-        void *exists = zhashx_lookup (self->all_assets, fty_proto_name (message));
-        if (exists)
-            self->is_reconfig_needed = true;
-        zhashx_delete (self->all_assets, fty_proto_name (message));
-        fty_proto_destroy (message_p);
         *message_p = NULL;
         return true;
     }
