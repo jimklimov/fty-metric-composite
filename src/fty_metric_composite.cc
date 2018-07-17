@@ -72,8 +72,10 @@ main (int argc, char** argv) {
 
     zstr_sendx (cm_server, "CONNECT", "ipc://@/malamute", NULL);
     zclock_sleep (500);  // to settle down the things
+    // TODO: check the possibility of passing verbosity paramater to this component.
+    // If not possible, set verbose mode when BIOS_LOG_LEVEL is 'other' for consistency with fty-common-logging.
     if(strcmp(getenv("BIOS_LOG_LEVEL"), "LOG_DEBUG") == 0)
-        zstr_sendx (cm_server, "VERBOSE", NULL);
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     zstr_sendx (cm_server, "CONFIG", argv[1], NULL);
 
     //  Accept and print any message back from server
