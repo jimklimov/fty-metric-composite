@@ -221,7 +221,6 @@ actor_commands_test (bool verbose)
     char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
     assert (test_state_file != NULL);
 
-    printf (" * actor_commands: ");
     //  @selftest
     static const char* endpoint = "ipc://bios-actor-commands-test";
     // malamute broker
@@ -468,5 +467,5 @@ actor_commands_test (bool verbose)
     zstr_free (&test_state_file);
     zactor_destroy (&malamute);
     //  @end
-    printf ("OK\n");
+    log_info ("actor-commands-test OK\n");
 }

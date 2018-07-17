@@ -526,7 +526,7 @@ test_dir_contents (
         const std::string& directory,
         std::vector <std::string>& expected)
 {
-    printf ("test_dir_contents (): start in %s\n", directory.c_str());
+    log_debug ("test_dir_contents (): start in %s\n", directory.c_str());
     zdir_t *dir = zdir_new (directory.c_str (), "-");
     assert (dir);
 
@@ -548,7 +548,7 @@ test_dir_contents (
                 }
             }
             if (!found) {
-                printf ("Filename '%s' present in directory but not expected.\n", zfile_filename (item, directory.c_str ()));
+                log_error ("Filename '%s' present in directory but not expected.\n", zfile_filename (item, directory.c_str ()));
                 zlist_destroy (&files);
                 zdir_destroy (&dir);
                 return 1;
@@ -580,10 +580,6 @@ fty_metric_composite_configurator_server_test (bool verbose)
     static const char* endpoint = "inproc://bios-composite-configurator-server-test";
 
     //  @selftest
-
-    printf (" * fty_metric_composite_configurator_server: ");
-    if (verbose)
-        printf ("\n");
 
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
@@ -641,7 +637,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
     fty_proto_t *asset = NULL;
 
-    printf ("TRACE CREATE DC-Rozskoky\n");
+    log_trace ("TRACE CREATE DC-Rozskoky\n");
     asset = test_asset_new ("DC-Rozskoky", FTY_PROTO_ASSET_OP_CREATE); // 1
     fty_proto_aux_insert (asset, "parent", "%s", "0");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -653,7 +649,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Lazer game\n");
+    log_trace ("TRACE CREATE Lazer game\n");
     asset = test_asset_new ("Lazer game", FTY_PROTO_ASSET_OP_CREATE); // 2
     fty_proto_aux_insert (asset, "parent", "%s", "1");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -664,7 +660,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Curie\n");
+    log_trace ("TRACE CREATE Curie\n");
     asset = test_asset_new ("Curie", FTY_PROTO_ASSET_OP_CREATE); // 3
     fty_proto_aux_insert (asset, "parent", "%s", "1");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -675,7 +671,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Lazer game.Row01\n");
+    log_trace ("TRACE CREATE Lazer game.Row01\n");
     asset = test_asset_new ("Lazer game.Row01", FTY_PROTO_ASSET_OP_CREATE); // 4
     fty_proto_aux_insert (asset, "parent", "%s", "2");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -687,7 +683,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     zclock_sleep (50);
 
     // testing situation when sensor asset message arrives before asset specified in logical_asset
-    printf ("TRACE CREATE Sensor01\n");
+    log_trace ("TRACE CREATE Sensor01\n");
     asset = test_asset_new ("Sensor01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -705,7 +701,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Rack01\n");
+    log_trace ("TRACE CREATE Rack01\n");
     asset = test_asset_new ("Rack01", FTY_PROTO_ASSET_OP_CREATE); // 5
     fty_proto_aux_insert (asset, "parent", "%s", "4");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -718,7 +714,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Rack02\n");
+    log_trace ("TRACE CREATE Rack02\n");
     asset = test_asset_new ("Rack02", FTY_PROTO_ASSET_OP_CREATE); // 6
     fty_proto_aux_insert (asset, "parent", "%s", "4");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -730,7 +726,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Curie.Row01\n");
+    log_trace ("TRACE CREATE Curie.Row01\n");
     asset = test_asset_new ("Curie.Row01", FTY_PROTO_ASSET_OP_CREATE); // 7
     fty_proto_aux_insert (asset, "parent", "%s", "3");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -741,7 +737,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Curie.Row02\n");
+    log_trace ("TRACE CREATE Curie.Row02\n");
     asset = test_asset_new ("Curie.Row02", FTY_PROTO_ASSET_OP_CREATE); // 8
     fty_proto_aux_insert (asset, "parent", "%s", "3");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -752,7 +748,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Rack03\n");
+    log_trace ("TRACE CREATE Rack03\n");
     asset = test_asset_new ("Rack03", FTY_PROTO_ASSET_OP_CREATE); // 9
     fty_proto_aux_insert (asset, "parent", "%s", "7");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -765,7 +761,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (2000);
 
-    printf ("TRACE CREATE Rack04\n");
+    log_trace ("TRACE CREATE Rack04\n");
     asset = test_asset_new ("Rack04", FTY_PROTO_ASSET_OP_CREATE); // 10
     fty_proto_aux_insert (asset, "parent", "%s", "8");
     fty_proto_aux_insert (asset, "status", "%s", "active");
@@ -778,7 +774,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Rack01.ups1\n");
+    log_trace ("TRACE CREATE Rack01.ups1\n");
     asset = test_asset_new ("Rack01.ups1", FTY_PROTO_ASSET_OP_CREATE); // 11
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "ups");
@@ -789,7 +785,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor02\n");
+    log_trace ("TRACE CREATE Sensor02\n");
     asset = test_asset_new ("Sensor02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -807,7 +803,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor03\n");
+    log_trace ("TRACE CREATE Sensor03\n");
     asset = test_asset_new ("Sensor03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -826,7 +822,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     zclock_sleep (100);
 
     // The following 4 sensors have important info missing
-    printf ("TRACE CREATE Sensor04\n");
+    log_trace ("TRACE CREATE Sensor04\n");
     asset = test_asset_new ("Sensor04", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -844,7 +840,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor05\n");
+    log_trace ("TRACE CREATE Sensor05\n");
     asset = test_asset_new ("Sensor05", FTY_PROTO_ASSET_OP_CREATE);
     // parent missing
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -862,7 +858,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor06\n");
+    log_trace ("TRACE CREATE Sensor06\n");
     asset = test_asset_new ("Sensor06", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     // parent_name.1 missing
@@ -880,7 +876,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor07\n");
+    log_trace ("TRACE CREATE Sensor07\n");
     asset = test_asset_new ("Sensor07", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -898,7 +894,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor08\n");
+    log_trace ("TRACE CREATE Sensor08\n");
     asset = test_asset_new ("Sensor08", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -916,7 +912,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor09\n");
+    log_trace ("TRACE CREATE Sensor09\n");
     asset = test_asset_new ("Sensor09", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -934,7 +930,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor10\n");
+    log_trace ("TRACE CREATE Sensor10\n");
     asset = test_asset_new ("Sensor10", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -950,7 +946,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor11\n");
+    log_trace ("TRACE CREATE Sensor11\n");
     asset = test_asset_new ("Sensor11", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -968,7 +964,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor12\n");
+    log_trace ("TRACE CREATE Sensor12\n");
     asset = test_asset_new ("Sensor12", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -985,7 +981,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor13\n");
+    log_trace ("TRACE CREATE Sensor13\n");
     asset = test_asset_new ("Sensor13", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1003,7 +999,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor14\n");
+    log_trace ("TRACE CREATE Sensor14\n");
     asset = test_asset_new ("Sensor14", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1018,7 +1014,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor15\n");
+    log_trace ("TRACE CREATE Sensor15\n");
     asset = test_asset_new ("Sensor15", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1036,10 +1032,10 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE ---===### (Test block -1-) ###===---\n");
+    log_debug ("TRACE ---===### (Test block -1-) ###===---\n");
     {
         uint64_t retry = 20000;
-        printf ("Sleeping 1m for configurator kick in and finish\n");
+        log_debug ("Sleeping 1m for configurator kick in and finish\n");
         zclock_sleep (60000); // magical constant
 
         std::vector <std::string> expected_configs_orig = {
@@ -1061,12 +1057,12 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
         std::vector <std::string> expected_configs (expected_configs_orig);
         int rv = test_dir_contents (test_state_dir, expected_configs);
-        printf ("rv == %d\n", rv);
+        log_debug ("rv == %d\n", rv);
         while ( rv != 0 && retry > 0) {
-            printf ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
+            log_debug ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
             zclock_sleep (retry);
             retry = 0;
-            printf ("Checking the directory again...");
+            log_trace ("Checking the directory again...");
             std::vector <std::string> expected_configs_retry (expected_configs_orig);
             rv = test_dir_contents (test_state_dir, expected_configs_retry);
         }
@@ -1077,15 +1073,15 @@ fty_metric_composite_configurator_server_test (bool verbose)
         for (std::string &it : expected_configs_orig) {
             char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
             assert (expected_filename != NULL);
-            if (verbose) printf("TRACE BLOCK-1 zsys_file_delete('%s')", expected_filename);
+            log_trace ("TRACE BLOCK-1 zsys_file_delete('%s')", expected_filename);
             zsys_file_delete (expected_filename);
             zstr_free (&expected_filename);
         }
 
-        printf ("Test block -1- Ok\n");
+        log_debug ("Test block -1- Ok\n");
     }
 
-    printf ("TRACE CREATE ups2\n");
+    log_trace ("TRACE CREATE ups2\n");
     asset = test_asset_new ("ups2", FTY_PROTO_ASSET_OP_CREATE); // 12
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "ups");
@@ -1095,7 +1091,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor01\n");
+    log_trace ("TRACE UPDATE Sensor01\n");
     asset = test_asset_new ("Sensor01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1112,7 +1108,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor02\n");
+    log_trace ("TRACE UPDATE Sensor02\n");
     asset = test_asset_new ("Sensor02", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "12");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "ups2");
@@ -1130,7 +1126,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor03\n");
+    log_trace ("TRACE UPDATE Sensor03\n");
     asset = test_asset_new ("Sensor03", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1145,7 +1141,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor10\n");
+    log_trace ("TRACE UPDATE Sensor10\n");
     asset = test_asset_new ("Sensor10", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1162,7 +1158,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE RETIRE Sensor11\n");
+    log_trace ("TRACE RETIRE Sensor11\n");
     asset = test_asset_new ("Sensor11", FTY_PROTO_ASSET_OP_RETIRE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -1171,7 +1167,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor08\n");
+    log_trace ("TRACE UPDATE Sensor08\n");
     asset = test_asset_new ("Sensor08", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1189,7 +1185,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor09\n");
+    log_trace ("TRACE UPDATE Sensor09\n");
     asset = test_asset_new ("Sensor09", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1205,7 +1201,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor04\n");
+    log_trace ("TRACE UPDATE Sensor04\n");
     asset = test_asset_new ("Sensor04", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1221,7 +1217,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor05\n");
+    log_trace ("TRACE UPDATE Sensor05\n");
     asset = test_asset_new ("Sensor05", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1239,7 +1235,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor06\n");
+    log_trace ("TRACE UPDATE Sensor06\n");
     asset = test_asset_new ("Sensor06", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1256,7 +1252,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor07\n");
+    log_trace ("TRACE UPDATE Sensor07\n");
     asset = test_asset_new ("Sensor07", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1273,7 +1269,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE DELETE Sensor12\n");
+    log_trace ("TRACE DELETE Sensor12\n");
     asset = test_asset_new ("Sensor12", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -1282,7 +1278,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor14\n");
+    log_trace ("TRACE UPDATE Sensor14\n");
     asset = test_asset_new ("Sensor14", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "12");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "ups2");
@@ -1296,7 +1292,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE UPDATE Sensor15\n");
+    log_trace ("TRACE UPDATE Sensor15\n");
     asset = test_asset_new ("Sensor15", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "Rack01.ups1");
@@ -1312,7 +1308,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE DELETE Sensor13\n");
+    log_trace ("TRACE DELETE Sensor13\n");
     asset = test_asset_new ("Sensor13", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -1321,10 +1317,10 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE ---===### (Test block -2-) ###===---\n");
+    log_debug ("TRACE ---===### (Test block -2-) ###===---\n");
     {
         uint64_t retry = 20000;
-        printf ("Sleeping 1m for configurator kick in and finish\n");
+        log_debug ("Sleeping 1m for configurator kick in and finish\n");
         zclock_sleep (60000);
 
         std::vector <std::string> expected_configs_orig = {
@@ -1346,17 +1342,17 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
         std::vector <std::string> expected_configs (expected_configs_orig);
         int rv = test_dir_contents (test_state_dir, expected_configs);
-        printf ("rv == %d\n", rv);
+        log_debug ("rv == %d\n", rv);
         while ( rv != 0 && retry > 0) {
-            printf ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
+            log_debug ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
             zclock_sleep (retry);
             retry = 0;
-            printf ("Checking the directory again...");
+            log_trace ("Checking the directory again...");
             std::vector <std::string> expected_configs_retry (expected_configs_orig);
             rv = test_dir_contents (test_state_dir, expected_configs_retry);
         }
 
-        printf ("rv == %d\n", rv);
+        log_debug ("rv == %d\n", rv);
         assert (rv == 0);
 
         zlistx_t *expected_unavailable = zlistx_new ();
@@ -1381,10 +1377,10 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
             part = zmsg_popstr (message);
             assert (part);
-            printf ("Got metric unavailable topic '%s' ... ", part);
+            log_debug ("Got metric unavailable topic '%s' ... ", part);
             void *handle = zlistx_find (expected_unavailable, (void *) part);
             assert (handle);
-            printf ("It's OK.\n");
+            log_debug ("It's OK.\n");
             zlistx_delete (expected_unavailable, handle);
 
             zstr_free (&part);
@@ -1395,17 +1391,17 @@ fty_metric_composite_configurator_server_test (bool verbose)
         for (std::string &it : expected_configs_orig) {
             char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
             assert (expected_filename != NULL);
-            if (verbose) printf("TRACE BLOCK-2 zsys_file_delete('%s')", expected_filename);
+            log_trace ("TRACE BLOCK-2 zsys_file_delete('%s')", expected_filename);
             zsys_file_delete (expected_filename);
             zstr_free (&expected_filename);
         }
 
         zlistx_destroy (&expected_unavailable);
 
-        printf ("Test block -2- Ok\n");
+        log_debug ("Test block -2- Ok\n");
     }
 
-    printf ("TRACE DELETE Sensor15\n");
+    log_trace ("TRACE DELETE Sensor15\n");
     asset = test_asset_new ("Sensor15", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -1414,7 +1410,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE DELETE Curie.Row02\n");
+    log_trace ("TRACE DELETE Curie.Row02\n");
     asset = test_asset_new ("Curie.Row02", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "row");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -1423,7 +1419,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE Sensor16\n");
+    log_trace ("TRACE CREATE Sensor16\n");
     asset = test_asset_new ("Sensor16", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "13");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "nas rack controller");
@@ -1438,7 +1434,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 
-    printf ("TRACE CREATE nas rack controller\n");
+    log_trace ("TRACE CREATE nas rack controller\n");
     asset = test_asset_new ("nas rack controller", FTY_PROTO_ASSET_OP_CREATE); // 12
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "rackcontroller");
@@ -1449,9 +1445,9 @@ fty_metric_composite_configurator_server_test (bool verbose)
     assert (rv == 0);
     zclock_sleep (50);
 /* BIOS-2484: sensors for NON racks are ignored -> this block is not relevant
-    printf ("TRACE ---===### (Test block -3-) ###===---\n");
+    log_trace ("TRACE ---===### (Test block -3-) ###===---\n");
     {
-        printf ("Sleeping 1m for configurator kick in and finish\n");
+        log_debug ("Sleeping 1m for configurator kick in and finish\n");
         zclock_sleep (60000);
 
         std::vector <std::string> expected_configs = {
@@ -1466,7 +1462,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
         };
 
         int rv = test_dir_contents (test_state_dir, expected_configs);
-        printf ("rv == %d\n", rv);
+        log_debug ("rv == %d\n", rv);
         assert (rv == 0);
 
         zlistx_t *expected_unavailable = zlistx_new ();
@@ -1491,10 +1487,10 @@ fty_metric_composite_configurator_server_test (bool verbose)
 
             part = zmsg_popstr (message);
             assert (part);
-            printf ("Got metric unavailable topic '%s' ... ", part);
+            log_debug ("Got metric unavailable topic '%s' ... ", part);
             void *handle = zlistx_find (expected_unavailable, (void *) part);
             assert (handle);
-            printf ("It's OK.\n");
+            log_debug ("It's OK.\n");
             zlistx_delete (expected_unavailable, handle);
 
             zstr_free (&part);
@@ -1505,14 +1501,14 @@ fty_metric_composite_configurator_server_test (bool verbose)
         for (std::string &it : expected_configs) {
             char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
             assert (expected_filename != NULL);
-            if (verbose) printf("TRACE BLOCK-3 zsys_file_delete('%s')", expected_filename);
+            log_trace ("TRACE BLOCK-3 zsys_file_delete('%s')", expected_filename);
             zsys_file_delete (expected_filename);
             zstr_free (&expected_filename);
         }
 
         zlistx_destroy (&expected_unavailable);
 
-        printf ("Test block -3- Ok\n");
+        log_info ("Test block -3- Ok\n");
     }*/
 
     mlm_client_destroy (&producer);
@@ -1532,5 +1528,5 @@ fty_metric_composite_configurator_server_test (bool verbose)
     zstr_free (&test_state_file);
     zstr_free (&test_state_dir);
     //  @end
-    printf ("OK\n");
+    log_info ("OK\n");
 }

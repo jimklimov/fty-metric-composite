@@ -60,7 +60,7 @@ main (int argc, char** argv) {
         if (tmp_arg[tmp_i] == '/') { tmp_basename = tmp_arg + tmp_i + 1; }
     }
     if(asprintf(&name, "fty-metric-composite-%s", tmp_basename) < 0) {
-        zsys_error("Can't allocate name of agent\n");
+        log_error("Can't allocate name of agent\n");
         exit(1);
     }
 
@@ -72,10 +72,6 @@ main (int argc, char** argv) {
 
     zstr_sendx (cm_server, "CONNECT", "ipc://@/malamute", NULL);
     zclock_sleep (500);  // to settle down the things
-    // TODO: check the possibility of passing verbosity paramater to this component.
-    // If not possible, set verbose mode when BIOS_LOG_LEVEL is 'other' for consistency with fty-common-logging.
-    if(strcmp(getenv("BIOS_LOG_LEVEL"), "LOG_DEBUG") == 0)
-        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     zstr_sendx (cm_server, "CONFIG", argv[1], NULL);
 
     //  Accept and print any message back from server

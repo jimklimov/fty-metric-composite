@@ -262,11 +262,9 @@ c_metric_conf_test (bool verbose)
     // for manipulation, and that "/lib" and "/root" dirs exist and are
     // not available to the testing user/program.
 
-    printf (" * c_metric_conf: \n");
     //  @selftest
     //  =================================================================
-    if ( verbose )
-        log_debug ("Test1: Simple create/destroy test");
+    log_trace ("Test1: Simple create/destroy test");
     c_metric_conf_t *self = c_metric_conf_new ("myname");
     assert (self);
 
@@ -350,5 +348,5 @@ c_metric_conf_test (bool verbose)
 
     c_metric_conf_destroy (&self);
     //  @end
-    printf (" * c_metric_conf: OK\n");
+    log_info (" * c_metric_conf: OK\n");
 }

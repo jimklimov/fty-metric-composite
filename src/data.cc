@@ -80,7 +80,7 @@ data_new (void)
     for (auto &it: self->devmap) {
         char *patha = realpath (it.first.c_str (), NULL);
         if (!patha) {
-            zsys_warning ("Can't get realpath of %s, using %s: %s", it.first.c_str (), it.second.c_str (), strerror (errno));
+            log_warning ("Can't get realpath of %s, using %s: %s", it.first.c_str (), it.second.c_str (), strerror (errno));
             zstr_free (&patha);
             continue;
         }
@@ -777,8 +777,7 @@ test_zlistx_compare (zlistx_t *expected, zlistx_t **received_p, bool verbose = f
     while (cursor) {
         void *handle = zlistx_find (received, (void *) cursor);
         if (!handle) {
-            if ( verbose )
-                log_debug ("expected but not found: %s", cursor);
+            log_debug ("expected but not found: %s", cursor);
             zlistx_destroy (received_p);
             *received_p = NULL;
             return 1;
@@ -812,8 +811,8 @@ data_compare (data_t *source, data_t *target, bool verbose) {
     else {
         assert ( target != NULL );
 
-        zsys_debug ("data_get_ipc (source)=%s <%p>", data_get_ipc (source), (void*) data_get_ipc (source));
-        zsys_debug ("data_get_ipc (target)=%s <%p>", data_get_ipc (target), (void*) data_get_ipc (target));
+        log_debug ("data_get_ipc (source)=%s <%p>", data_get_ipc (source), (void*) data_get_ipc (source));
+        log_debug ("data_get_ipc (target)=%s <%p>", data_get_ipc (target), (void*) data_get_ipc (target));
 
         if (data_get_ipc (source) != NULL) {
             assert (data_get_ipc (target));
@@ -832,8 +831,7 @@ data_compare (data_t *source, data_t *target, bool verbose) {
         {
             void *handle = zhashx_lookup (target->all_assets, fty_proto_name (source_asset));
             if ( handle == NULL ) {
-                if ( verbose )
-                    log_debug ("asset='%s' is NOT in target, but expected", fty_proto_name (source_asset));
+                log_debug ("asset='%s' is NOT in target, but expected", fty_proto_name (source_asset));
                 assert ( false );
             }
         }
@@ -844,8 +842,7 @@ data_compare (data_t *source, data_t *target, bool verbose) {
         {
             void *handle = zhashx_lookup (source->all_assets, fty_proto_name (target_asset));
             if ( handle == NULL ) {
-                if ( verbose )
-                    log_debug ("asset='%s' is in target, but NOT expected", fty_proto_name (target_asset));
+                log_debug ("asset='%s' is in target, but NOT expected", fty_proto_name (target_asset));
                 assert ( false );
             }
         }
@@ -856,15 +853,13 @@ data_compare (data_t *source, data_t *target, bool verbose) {
         // test produced_metrics
         for ( const auto &source_metric : source->produced_metrics) {
             if ( target->produced_metrics.count (source_metric) != 1 ) {
-                if ( verbose )
-                    log_debug ("produced_topic='%s' is NOT in target, but expected", source_metric.c_str());
+                log_debug ("produced_topic='%s' is NOT in target, but expected", source_metric.c_str());
                 assert ( false );
             }
         }
         for ( const auto &target_metric : target->produced_metrics) {
             if ( source->produced_metrics.count (target_metric) != 1 ) {
-                if ( verbose )
-                    log_debug ("produced_topic='%s' is in target, but NOT expected", target_metric.c_str());
+                log_debug ("produced_topic='%s' is in target, but NOT expected", target_metric.c_str());
                 assert ( false );
             }
         }
@@ -874,8 +869,7 @@ data_compare (data_t *source, data_t *target, bool verbose) {
 static void
 test4 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test4: save/load test");
+    log_debug ("Test4: save/load test");
 
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
@@ -1018,8 +1012,7 @@ test5 (bool verbose)
 
     // TOPOLOGY:
     // DC->ROOM->ROW->RACK->UPS->SENSOR
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST5_DC' as datacenter");
+    log_trace ("\tCREATE 'TEST5_DC' as datacenter");
     asset = test_asset_new ("TEST5_DC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -1029,8 +1022,7 @@ test5 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
     zlistx_add_end (assets_expected, (void *) "TEST5_DC");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST5_ROOM' as room");
+    log_trace ("\tCREATE 'TEST5_ROOM' as room");
     asset = test_asset_new ("TEST5_ROOM", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST5_DC");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -1041,8 +1033,7 @@ test5 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
     zlistx_add_end (assets_expected, (void *) "TEST5_ROOM");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST5_ROW' as row");
+    log_trace ("\tCREATE 'TEST5_ROW' as row");
     asset = test_asset_new ("TEST5_ROW", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST5_ROOM");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST5_DC");
@@ -1054,10 +1045,9 @@ test5 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
     zlistx_add_end (assets_expected, (void *) "TEST5_ROW");
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST5_SENSOR' as sensor");
-        log_debug ("\t\tSituation: sensor asset message arrives before asset specified in logical_asset");
-    }
+    log_trace ("\tCREATE 'TEST5_SENSOR' as sensor");
+    log_trace ("\t\tSituation: sensor asset message arrives before asset specified in logical_asset");
+
     asset = test_asset_new ("TEST5_SENSOR", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST5_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST5_RACK");
@@ -1108,10 +1098,8 @@ test5 (bool verbose)
         assert ( rv == 0 );
     }
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST5_RACK' as rack");
-        log_debug ("\t\tSituation: finally message about logical_asset arrived");
-    }
+    log_trace ("\tCREATE 'TEST5_RACK' as rack");
+    log_trace ("\t\tSituation: finally message about logical_asset arrived");
     asset = test_asset_new ("TEST5_RACK", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST5_ROW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST5_ROOM");
@@ -1170,14 +1158,12 @@ test5 (bool verbose)
 static void
 test6 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test6: Sensor important info is missing for CREATE operation");
+    log_debug ("Test6: Sensor important info is missing for CREATE operation");
 
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST6_RACK' as rack");
+    log_trace ("\tCREATE 'TEST6_RACK' as rack");
     asset = test_asset_new ("TEST6_RACK", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "rack");
     data_asset_store (self, &asset);
@@ -1185,10 +1171,8 @@ test6 (bool verbose)
     data_reassign_sensors (self, true);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST6_SENSOR01' as sensor");
-        log_debug ("\t\tlogical_asset is missing");
-    }
+    log_trace ("\tCREATE 'TEST6_SENSOR01' as sensor");
+    log_trace ("\t\tlogical_asset is missing");
     asset = test_asset_new ("TEST6_SENSOR01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST6_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1203,10 +1187,8 @@ test6 (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST6_SENSOR02' as sensor");
-        log_debug ("\t\tparent_name.1 is missing");
-    }
+    log_trace ("\tCREATE 'TEST6_SENSOR02' as sensor");
+    log_trace ("\t\tparent_name.1 is missing");
     asset = test_asset_new ("TEST6_SENSOR02", FTY_PROTO_ASSET_OP_CREATE);
     // parent_name.1 missing
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1221,10 +1203,8 @@ test6 (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST6_SENSOR03' as sensor");
-        log_debug ("\t\tport is missing");
-    }
+    log_trace ("\tCREATE 'TEST6_SENSOR03' as sensor");
+    log_trace ("\t\tport is missing");
     asset = test_asset_new ("TEST6_SENSOR03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST6_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1245,16 +1225,14 @@ test6 (bool verbose)
 static void
 test7 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test7: Sensor important info is missing for UPDATE operation");
+    log_debug ("Test7: Sensor important info is missing for UPDATE operation");
 
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
     zlistx_t *sensors = NULL;
 
     // SETUP
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST7_DC' as datacenter");
+    log_trace ("\tCREATE 'TEST7_DC' as datacenter");
     asset = test_asset_new ("TEST7_DC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -1263,8 +1241,7 @@ test7 (bool verbose)
     data_reassign_sensors (self, true); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST7_RACK' as rack");
+    log_trace ("\tCREATE 'TEST7_RACK' as rack");
     asset = test_asset_new ("TEST7_RACK", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST7_DC");
     fty_proto_aux_insert (asset, "type", "%s", "rack");
@@ -1273,8 +1250,7 @@ test7 (bool verbose)
     data_reassign_sensors (self, true); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST7_SENSOR01' as sensor");
+    log_trace ("\tCREATE 'TEST7_SENSOR01' as sensor");
     asset = test_asset_new ("TEST7_SENSOR01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST7_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1289,8 +1265,7 @@ test7 (bool verbose)
     data_reassign_sensors (self, true); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST7_SENSOR02' as sensor");
+    log_trace ("\tCREATE 'TEST7_SENSOR02' as sensor");
     asset = test_asset_new ("TEST7_SENSOR02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST7_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1305,8 +1280,7 @@ test7 (bool verbose)
     data_reassign_sensors (self, true); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST7_SENSOR03' as sensor");
+    log_trace ("\tCREATE 'TEST7_SENSOR03' as sensor");
     asset = test_asset_new ("TEST7_SENSOR03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST7_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1322,10 +1296,8 @@ test7 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
 
     // actual test
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST7_SENSOR01' as sensor");
-        log_debug ("\t\tlogical_asset is missing");
-    }
+    log_trace ("\tUPDATE 'TEST7_SENSOR01' as sensor");
+    log_trace ("\t\tlogical_asset is missing");
     asset = test_asset_new ("TEST7_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST7_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1340,10 +1312,8 @@ test7 (bool verbose)
     data_reassign_sensors (self, true); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST7_SENSOR02' as sensor");
-        log_debug ("\t\tparent_name.1 is missing");
-    }
+    log_trace ("\tUPDATE 'TEST7_SENSOR02' as sensor");
+    log_trace ("\t\tparent_name.1 is missing");
     asset = test_asset_new ("TEST7_SENSOR02", FTY_PROTO_ASSET_OP_UPDATE);
     // parent_name.1 missing
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1358,10 +1328,8 @@ test7 (bool verbose)
     data_reassign_sensors (self, true); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST7_SENSOR03' as sensor");
-        log_debug ("\t\tport is missing");
-    }
+    log_trace ("\tCREATE 'TEST7_SENSOR03' as sensor");
+    log_trace ("\t\tport is missing");
     asset = test_asset_new ("TEST7_SENSOR03", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST7_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1404,30 +1372,26 @@ test7 (bool verbose)
 static void
 test8 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test8: data_get_assigned_sensors");
+    log_debug ("Test8: data_get_assigned_sensors");
 
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
     zlistx_t *sensors = NULL;
     fty_proto_t *item = NULL;
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST8_DC' as datacenter");
+    log_trace ("\tCREATE 'TEST8_DC' as datacenter");
     asset = test_asset_new ("TEST8_DC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST8_RACK' as rack");
+    log_trace ("\tCREATE 'TEST8_RACK' as rack");
     asset = test_asset_new ("TEST8_RACK", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST8_DC");
     fty_proto_aux_insert (asset, "type", "%s", "rack");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST8_SENSOR01' as sensor");
+    log_trace ("\tCREATE 'TEST8_SENSOR01' as sensor");
     asset = test_asset_new ("TEST8_SENSOR01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST8_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1439,8 +1403,7 @@ test8 (bool verbose)
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST8_RACK");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST8_SENSOR02' as sensor");
+    log_trace ("\tCREATE 'TEST8_SENSOR02' as sensor");
     asset = test_asset_new ("TEST8_SENSOR02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST8_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1452,8 +1415,7 @@ test8 (bool verbose)
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST8_RACK");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST8_SENSOR03' as sensor");
+    log_trace ("\tCREATE 'TEST8_SENSOR03' as sensor");
     asset = test_asset_new ("TEST8_SENSOR03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST8_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1465,8 +1427,7 @@ test8 (bool verbose)
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST8_RACK");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST8_SENSOR04' as sensor");
+    log_trace ("\tCREATE 'TEST8_SENSOR04' as sensor");
     asset = test_asset_new ("TEST8_SENSOR04", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST8_UPS");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1535,8 +1496,7 @@ test8 (bool verbose)
 static void
 test9 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test9: Check that sensor logically assigned to device/group is skipped");
+    log_debug ("Test9: Check that sensor logically assigned to device/group is skipped");
 
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
@@ -1546,30 +1506,26 @@ test9 (bool verbose)
     // DC->RACK->UPS->SENSOR01
     //         ->RC ->SENSOR02
     //   ->GROUP
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST9_DC' as datacenter");
+    log_trace ("\tCREATE 'TEST9_DC' as datacenter");
     asset = test_asset_new ("TEST9_DC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST9_GROUP' as group");
+    log_trace ("\tCREATE 'TEST9_GROUP' as group");
     asset = test_asset_new ("TEST9_GROUP", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_DC");
     fty_proto_aux_insert (asset, "type", "%s", "group");
     fty_proto_aux_insert (asset, "subtype", "%s", "power_input");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST9_RACK' as rack");
+    log_trace ("\tCREATE 'TEST9_RACK' as rack");
     asset = test_asset_new ("TEST9_RACK", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_DC");
     fty_proto_aux_insert (asset, "type", "%s", "rack");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST9_UPS' as ups");
+    log_trace ("\tCREATE 'TEST9_UPS' as ups");
     asset = test_asset_new ("TEST9_UPS", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_RACK");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST9_DC");
@@ -1577,8 +1533,7 @@ test9 (bool verbose)
     fty_proto_aux_insert (asset, "subtype", "%s", "ups");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST9_RC' as rack controller");
+    log_trace ("\tCREATE 'TEST9_RC' as rack controller");
     asset = test_asset_new ("TEST9_RC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_RACK");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST9_DC");
@@ -1586,8 +1541,7 @@ test9 (bool verbose)
     fty_proto_aux_insert (asset, "subtype", "%s", "rackcontroller");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST9_SENSOR01' as sensor");
+    log_trace ("\tCREATE 'TEST9_SENSOR01' as sensor");
     asset = test_asset_new ("TEST9_SENSOR01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST9_RACK");
@@ -1601,10 +1555,8 @@ test9 (bool verbose)
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST9_RACK");
     data_asset_store (self, &asset);
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST9_SENSOR02' as sensor");
-        log_debug ("\t\tSituation: sensor logically assigned to device");
-    }
+    log_trace ("\tCREATE 'TEST9_SENSOR02' as sensor");
+    log_trace ("\t\tSituation: sensor logically assigned to device");
     asset = test_asset_new ("TEST9_SENSOR02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_RC");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST9_RACK");
@@ -1617,10 +1569,8 @@ test9 (bool verbose)
     fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST9_UPS");
     data_asset_store (self, &asset);
 
-    if ( verbose ) {
-        log_debug ("\tCREATE 'TEST9_SENSOR03' as sensor");
-        log_debug ("\t\tSituation: sensor logically assigned to group");
-    }
+    log_trace ("\tCREATE 'TEST9_SENSOR03' as sensor");
+    log_trace ("\t\tSituation: sensor logically assigned to group");
     asset = test_asset_new ("TEST9_SENSOR03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST9_DC");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1675,30 +1625,25 @@ test9 (bool verbose)
 static void
 test10 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test10: Check that UPDATE sensor will trigger reconfig only if needed");
+    log_debug ("Test10: Check that UPDATE sensor will trigger reconfig only if needed");
 
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST10_RACK01' as rack");
+    log_trace ("\tCREATE 'TEST10_RACK01' as rack");
     asset = test_asset_new ("TEST10_RACK01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "rack");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST10_RACK02' as rack");
+    log_trace ("\tCREATE 'TEST10_RACK02' as rack");
     asset = test_asset_new ("TEST10_RACK02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "rack");
     data_asset_store (self, &asset);
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message came, but CREATE message was missing");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message came, but CREATE message was missing");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1714,10 +1659,8 @@ test10 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1732,10 +1675,8 @@ test10 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1750,10 +1691,8 @@ test10 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message important info ('port') changed");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message important info ('port') changed");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1769,10 +1708,8 @@ test10 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message important info ('logical_asset') changed");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message important info ('logical_asset') changed");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1788,10 +1725,8 @@ test10 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message important info ('calibration_offset_h') changed");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message important info ('calibration_offset_h') changed");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1807,10 +1742,8 @@ test10 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message important info ('calibration_offset_t') changed");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message important info ('calibration_offset_t') changed");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1826,10 +1759,8 @@ test10 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message important info ('sensor_function') changed");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message important info ('sensor_function') changed");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_UPS");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST10_DC");
@@ -1845,10 +1776,8 @@ test10 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST10_SENSOR01' as sensor");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
-    }
+    log_trace ("\tUPDATE 'TEST10_SENSOR01' as sensor");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
     asset = test_asset_new ("TEST10_SENSOR01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST10_DC");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -1867,30 +1796,26 @@ test10 (bool verbose)
 static void
 test11 (bool verbose)
 {
-    if ( verbose )
-        log_debug ("Test11: Check that UPDATE container will trigger reconfig only if needed");
+    log_debug ("Test11: Check that UPDATE container will trigger reconfig only if needed");
 
     data_t *self = data_new();
     fty_proto_t *asset = NULL;
 
     // this one is used in UPDATE operations
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST11_DC_NEW' as datacenter");
+    log_trace ("\tCREATE 'TEST11_DC_NEW' as datacenter");
     asset = test_asset_new ("TEST11_DC_NEW", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST11_ROOM_NEW' as room");
+    log_trace ("\tCREATE 'TEST11_ROOM_NEW' as room");
     asset = test_asset_new ("TEST11_ROOM_NEW", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_DC_NEW");
     fty_proto_aux_insert (asset, "type", "%s", "room");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
     data_asset_store (self, &asset);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST11_ROW_NEW' as row");
+    log_trace ("\tCREATE 'TEST11_ROW_NEW' as row");
     asset = test_asset_new ("TEST11_ROW_NEW", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROOM_NEW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_DC_NEW");
@@ -1902,10 +1827,8 @@ test11 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
 
     // DC
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_DC' as datacenter");
-        log_debug ("\t\tSituation: UPDATE message came, but CREATE message was missing");
-    }
+    log_trace ("\tUPDATE 'TEST11_DC' as datacenter");
+    log_trace ("\t\tSituation: UPDATE message came, but CREATE message was missing");
     asset = test_asset_new ("TEST11_DC", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -1914,10 +1837,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_DC' as datacenter");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_DC' as datacenter");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
     asset = test_asset_new ("TEST11_DC", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -1925,10 +1846,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_DC' as datacenter");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_DC' as datacenter");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
     asset = test_asset_new ("TEST11_DC", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -1938,10 +1857,8 @@ test11 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
 
     // ROOM
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROOM' as room");
-        log_debug ("\t\tSituation: UPDATE message came, but CREATE message was missing");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROOM' as room");
+    log_trace ("\t\tSituation: UPDATE message came, but CREATE message was missing");
     asset = test_asset_new ("TEST11_ROOM", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_DC");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -1951,10 +1868,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROOM' as room");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROOM' as room");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
     asset = test_asset_new ("TEST11_ROOM", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_DC");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -1963,10 +1878,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROOM' as room");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROOM' as room");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
     asset = test_asset_new ("TEST11_ROOM", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_DC");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -1976,10 +1889,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROOM' as room");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROOM' as room");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
     asset = test_asset_new ("TEST11_ROOM", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_DC_NEW");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -1992,10 +1903,8 @@ test11 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
 
     // ROW
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROW' as row");
-        log_debug ("\t\tSituation: UPDATE message came, but CREATE message was missing");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROW' as row");
+    log_trace ("\t\tSituation: UPDATE message came, but CREATE message was missing");
     asset = test_asset_new ("TEST11_ROW", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROOM");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_DC");
@@ -2006,10 +1915,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROW' as row");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROW' as row");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
     asset = test_asset_new ("TEST11_ROW", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROOM");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_DC");
@@ -2019,10 +1926,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROW' as row");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROW' as row");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
     asset = test_asset_new ("TEST11_ROW", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROOM");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_DC");
@@ -2033,10 +1938,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROW' as row");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROW' as row");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
     asset = test_asset_new ("TEST11_ROW", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROOM_NEW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_DC");
@@ -2049,10 +1952,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_ROW' as row");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.2') changed");
-    }
+    log_trace ("\tUPDATE 'TEST11_ROW' as row");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.2') changed");
     asset = test_asset_new ("TEST11_ROW", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROOM_NEW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_DC_NEW");
@@ -2066,10 +1967,8 @@ test11 (bool verbose)
     assert ( data_is_reconfig_needed (self) == false );
 
     // RACK
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_RACK' as rack");
-        log_debug ("\t\tSituation: UPDATE message came, but CREATE message was missing");
-    }
+    log_trace ("\tUPDATE 'TEST11_RACK' as rack");
+    log_trace ("\t\tSituation: UPDATE message came, but CREATE message was missing");
     asset = test_asset_new ("TEST11_RACK", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_ROOM");
@@ -2081,10 +1980,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_RACK' as rack");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_RACK' as rack");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different EXT attributes");
     asset = test_asset_new ("TEST11_RACK", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_ROOM");
@@ -2095,10 +1992,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_RACK' as rack");
-        log_debug ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
-    }
+    log_trace ("\tUPDATE 'TEST11_RACK' as rack");
+    log_trace ("\t\tSituation: UPDATE message has the same important info but other different AUX attributes");
     asset = test_asset_new ("TEST11_RACK", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_ROOM");
@@ -2110,10 +2005,8 @@ test11 (bool verbose)
     data_asset_store (self, &asset);
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_RACK' as rack");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
-    }
+    log_trace ("\tUPDATE 'TEST11_RACK' as rack");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.1') changed");
     asset = test_asset_new ("TEST11_RACK", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROW_NEW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_ROOM");
@@ -2127,10 +2020,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_RACK' as rack");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.2') changed");
-    }
+    log_trace ("\tUPDATE 'TEST11_RACK' as rack");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.2') changed");
     asset = test_asset_new ("TEST11_RACK", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROW_NEW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_ROOM_NEW");
@@ -2144,10 +2035,8 @@ test11 (bool verbose)
     data_reassign_sensors (self, false); // drop the flag "is reconfiguration needed"
     assert ( data_is_reconfig_needed (self) == false );
 
-    if ( verbose ) {
-        log_debug ("\tUPDATE 'TEST11_RACK' as rack");
-        log_debug ("\t\tSituation: UPDATE message not important info ('parent_name.3') changed");
-    }
+    log_trace ("\tUPDATE 'TEST11_RACK' as rack");
+    log_trace ("\t\tSituation: UPDATE message not important info ('parent_name.3') changed");
     asset = test_asset_new ("TEST11_RACK", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST11_ROW_NEW");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST11_ROOM_NEW");
@@ -2171,11 +2060,9 @@ data_test (bool verbose)
     if ( verbose )
         ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
-    printf (" * data: \n");
     //  @selftest
     //  =================================================================
-    if ( verbose )
-        log_debug ("Test1: Simple create/destroy test");
+    log_debug ("Test1: Simple create/destroy test");
     data_t *self = data_new ();
     assert (self);
     zlistx_t *asset_names = data_asset_names (self);
@@ -2191,8 +2078,7 @@ data_test (bool verbose)
     self = data_new ();
 
     //  =================================================================
-    if ( verbose )
-        log_debug ("Test2: data_asset_store()/data_is_reconfig_needed()/data_is_reconfig_needed() for CREATE operation");
+    log_debug ("Test2: data_asset_store()/data_is_reconfig_needed()/data_is_reconfig_needed() for CREATE operation");
     // asset
     zlistx_t *assets_expected = zlistx_new ();
     zlistx_set_destructor (assets_expected, (czmq_destructor *) zstr_free);
@@ -2202,8 +2088,7 @@ data_test (bool verbose)
     fty_proto_t *item = NULL;
     fty_proto_t *asset = NULL;
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_DC' as datacenter");
+    log_trace ("\tCREATE 'TEST1_DC' as datacenter");
     asset = test_asset_new ("TEST1_DC", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "datacenter");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -2213,8 +2098,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_DC");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_ROOM01' as room");
+    log_trace ("\tCREATE 'TEST1_ROOM01' as room");
     asset = test_asset_new ("TEST1_ROOM01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_DC");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -2225,8 +2109,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_ROOM01");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_ROOM02 with spaces' as room");
+    log_trace ("\tCREATE 'TEST1_ROOM02 with spaces' as room");
     asset = test_asset_new ("TEST1_ROOM02 with spaces", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_DC");
     fty_proto_aux_insert (asset, "type", "%s", "room");
@@ -2237,8 +2120,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_ROOM02 with spaces");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_ROW01' as row");
+    log_trace ("\tCREATE 'TEST1_ROW01' as row");
     asset = test_asset_new ("TEST1_ROW01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROOM01");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_DC");
@@ -2250,8 +2132,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_ROW01");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_RACK01' as rack");
+    log_trace ("\tCREATE 'TEST1_RACK01' as rack");
     asset = test_asset_new ("TEST1_RACK01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROW01");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_ROOM01");
@@ -2263,8 +2144,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_RACK01");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_RACK02' as rack");
+    log_trace ("\tCREATE 'TEST1_RACK02' as rack");
     asset = test_asset_new ("TEST1_RACK02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROW01");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_ROOM01");
@@ -2277,8 +2157,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_RACK02");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_ROW02' as row");
+    log_trace ("\tCREATE 'TEST1_ROW02' as row");
     asset = test_asset_new ("TEST1_ROW02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROOM02");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_DC");
@@ -2290,8 +2169,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_ROW02");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_ROW03' as row");
+    log_trace ("\tCREATE 'TEST1_ROW03' as row");
     asset = test_asset_new ("TEST1_ROW03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROOM02");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_DC");
@@ -2303,8 +2181,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_ROW03");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_RACK03' as rack");
+    log_trace ("\tCREATE 'TEST1_RACK03' as rack");
     asset = test_asset_new ("TEST1_RACK03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROW02");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_ROOM02");
@@ -2317,8 +2194,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_RACK03");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_RACK04' as rack");
+    log_trace ("\tCREATE 'TEST1_RACK04' as rack");
     asset = test_asset_new ("TEST1_RACK04", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_ROW03");
     fty_proto_aux_insert (asset, "parent_name.2", "%s", "TEST1_ROOM02");
@@ -2331,8 +2207,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_RACK04");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_RACK01.ups1' as ups");
+    log_trace ("\tCREATE 'TEST1_RACK01.ups1' as ups");
     asset = test_asset_new ("TEST1_RACK01.ups1", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "ups");
@@ -2343,8 +2218,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_RACK01.ups1");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'TEST1_GROUP' as group");
+    log_trace ("\tCREATE 'TEST1_GROUP' as group");
     asset = test_asset_new ("TEST1_GROUP", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "type", "%s", "group");
     fty_proto_aux_insert (asset, "subtype", "%s", "power_input");
@@ -2354,8 +2228,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "TEST1_GROUP");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor01' as sensor");
+    log_trace ("\tCREATE 'Sensor01' as sensor");
     asset = test_asset_new ("Sensor01", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2371,8 +2244,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor01");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor02' as sensor");
+    log_trace ("\tCREATE 'Sensor02' as sensor");
     asset = test_asset_new ("Sensor02", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2388,8 +2260,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor02");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor03' as sensor");
+    log_trace ("\tCREATE 'Sensor03' as sensor");
     asset = test_asset_new ("Sensor03", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2405,8 +2276,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor03");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor08' as sensor");
+    log_trace ("\tCREATE 'Sensor08' as sensor");
     asset = test_asset_new ("Sensor08", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2422,8 +2292,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor08");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor09' as sensor");
+    log_trace ("\tCREATE 'Sensor09' as sensor");
     asset = test_asset_new ("Sensor09", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2439,8 +2308,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor09");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor10' as sensor");
+    log_trace ("\tCREATE 'Sensor10' as sensor");
     asset = test_asset_new ("Sensor10", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2454,8 +2322,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor10");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor11' as sensor");
+    log_trace ("\tCREATE 'Sensor11' as sensor");
     asset = test_asset_new ("Sensor11", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2471,8 +2338,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor11");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor12' as sensor");
+    log_trace ("\tCREATE 'Sensor12' as sensor");
     asset = test_asset_new ("Sensor12", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2488,8 +2354,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor12");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor13' as sensor");
+    log_trace ("\tCREATE 'Sensor13' as sensor");
     asset = test_asset_new ("Sensor13", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2505,8 +2370,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor13");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor14' as sensor");
+    log_trace ("\tCREATE 'Sensor14' as sensor");
     asset = test_asset_new ("Sensor14", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2519,8 +2383,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor14");
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor15' as sensor");
+    log_trace ("\tCREATE 'Sensor15' as sensor");
     asset = test_asset_new ("Sensor15", FTY_PROTO_ASSET_OP_CREATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2536,7 +2399,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor15");
 
-    printf ("TRACE ---===### (Test block -1-) ###===---\n");
+    log_debug ("TRACE ---===### (Test block -1-) ###===---\n");
     {
         // check, that list of assets stored is the expected one
         zlistx_t *received = data_asset_names (self);
@@ -2705,8 +2568,7 @@ data_test (bool verbose)
 */
     }
 
-    if ( verbose )
-        log_debug ("\tCREATE 'ups2' as ups");
+    log_trace ("\tCREATE 'ups2' as ups");
     asset = test_asset_new ("ups2", FTY_PROTO_ASSET_OP_CREATE); // 12
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "ups");
@@ -2717,8 +2579,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "ups2");
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor01'");
+    log_trace ("\tUPDATE 'Sensor01'");
     asset = test_asset_new ("Sensor01", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2732,8 +2593,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor02'");
+    log_trace ("\tUPDATE 'Sensor02'");
     asset = test_asset_new ("Sensor02", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "12");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "ups2");
@@ -2751,8 +2611,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor03'");
+    log_trace ("\tUPDATE 'Sensor03'");
     asset = test_asset_new ("Sensor03", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent", "%s", "11");
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
@@ -2767,8 +2626,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor10'");
+    log_trace ("\tUPDATE 'Sensor10'");
     asset = test_asset_new ("Sensor10", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2782,8 +2640,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose )
-        log_debug ("\tRETIRE 'Sensor11'");
+    log_trace ("\tRETIRE 'Sensor11'");
     asset = test_asset_new ("Sensor11", FTY_PROTO_ASSET_OP_RETIRE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -2794,8 +2651,7 @@ data_test (bool verbose)
     void *handle = zlistx_find (assets_expected, (void *) "Sensor11");
     zlistx_delete (assets_expected, handle);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor08'");
+    log_trace ("\tUPDATE 'Sensor08'");
     asset = test_asset_new ("Sensor08", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2810,8 +2666,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor09'");
+    log_trace ("\tUPDATE 'Sensor09'");
     asset = test_asset_new ("Sensor09", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2825,8 +2680,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == false);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor04'");
+    log_trace ("\tUPDATE 'Sensor04'");
     asset = test_asset_new ("Sensor04", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2841,8 +2695,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor04");
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor05'");
+    log_trace ("\tUPDATE 'Sensor05'");
     asset = test_asset_new ("Sensor05", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2858,8 +2711,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor05");
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor06'");
+    log_trace ("\tUPDATE 'Sensor06'");
     asset = test_asset_new ("Sensor06", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2875,8 +2727,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor06");
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor07'");
+    log_trace ("\tUPDATE 'Sensor07'");
     asset = test_asset_new ("Sensor07", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2893,8 +2744,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == false);
     zlistx_add_end (assets_expected, (void *) "Sensor07");
 
-    if ( verbose )
-        log_debug ("\tDELETE 'Sensor12'");
+    log_trace ("\tDELETE 'Sensor12'");
     asset = test_asset_new ("Sensor12", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -2905,8 +2755,7 @@ data_test (bool verbose)
     handle = zlistx_find (assets_expected, (void *) "Sensor12");
     zlistx_delete (assets_expected, handle);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor14'");
+    log_trace ("\tUPDATE 'Sensor14'");
     asset = test_asset_new ("Sensor14", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "ups2");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2918,8 +2767,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == true);
 
-    if ( verbose )
-        log_debug ("\tUPDATE 'Sensor15'");
+    log_trace ("\tUPDATE 'Sensor15'");
     asset = test_asset_new ("Sensor15", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST1_RACK01.ups1");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -2932,8 +2780,7 @@ data_test (bool verbose)
     data_reassign_sensors (self, true);
     assert (data_is_reconfig_needed (self) == true);
 
-    if ( verbose )
-        log_debug ("\tDELETE 'Sensor13'");
+    log_trace ("\tDELETE 'Sensor13'");
     asset = test_asset_new ("Sensor13", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -2942,7 +2789,7 @@ data_test (bool verbose)
     handle = zlistx_find (assets_expected, (void *) "Sensor13");
     zlistx_delete (assets_expected, handle);
 
-    printf ("TRACE ---===### (Test block -2-) ###===---\n");
+    log_debug ("TRACE ---===### (Test block -2-) ###===---\n");
     {
         zlistx_t *received = data_asset_names (self);
         assert (received);
@@ -3109,8 +2956,7 @@ data_test (bool verbose)
         */
     }
 
-    if ( verbose )
-        log_debug ("\tDELETE 'Sensor15'");
+    log_trace ("\tDELETE 'Sensor15'");
     asset = test_asset_new ("Sensor15", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
@@ -3120,8 +2966,7 @@ data_test (bool verbose)
     zlistx_delete (assets_expected, handle);
     assert (data_is_reconfig_needed (self) == true);
 
-    if ( verbose )
-        log_debug ("\tDELETE 'TEST1_ROW03'");
+    log_trace ("\tDELETE 'TEST1_ROW03'");
     asset = test_asset_new ("TEST1_ROW03", FTY_PROTO_ASSET_OP_DELETE);
     fty_proto_aux_insert (asset, "type", "%s", "row");
     fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
@@ -3134,8 +2979,7 @@ data_test (bool verbose)
     assert (rv == 0);
     assert (data_is_reconfig_needed (self) == true);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'Sensor16' as sensor");
+    log_trace ("\tCREATE 'Sensor16' as sensor");
     asset = test_asset_new ("Sensor16", FTY_PROTO_ASSET_OP_UPDATE);
     fty_proto_aux_insert (asset, "parent_name.1", "%s", "nas rack controller");
     fty_proto_aux_insert (asset, "type", "%s", "device");
@@ -3148,8 +2992,7 @@ data_test (bool verbose)
     zlistx_add_end (assets_expected, (void *) "Sensor16");
     assert (data_is_reconfig_needed (self) == true);
 
-    if ( verbose )
-        log_debug ("\tCREATE 'nas rack constroller' as rack controller");
+    log_trace ("\tCREATE 'nas rack constroller' as rack controller");
     asset = test_asset_new ("nas rack controller", FTY_PROTO_ASSET_OP_CREATE); // 12
     fty_proto_aux_insert (asset, "type", "%s", "device");
     fty_proto_aux_insert (asset, "subtype", "%s", "rackcontroller");
@@ -3161,7 +3004,7 @@ data_test (bool verbose)
     assert (data_is_reconfig_needed (self) == true);
     zlistx_add_end (assets_expected, (void *) "nas rack controller");
 
-    printf ("TRACE ---===### (Test block -3-) ###===---\n");
+    log_debug ("TRACE ---===### (Test block -3-) ###===---\n");
     {
         zlistx_t *received = data_asset_names (self);
         assert (received);
@@ -3237,5 +3080,5 @@ data_test (bool verbose)
     zlistx_destroy (&assets_expected);
     data_destroy (&self);
     //  @end
-    printf (" * data: OK\n");
+    log_info (" * data-test: OK\n");
 }

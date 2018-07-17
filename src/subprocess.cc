@@ -524,9 +524,8 @@ subprocess_test (bool verbose)
     ManageFtyLog::setInstanceFtylog ("subprocess-test", "");
     if ( verbose )
         ManageFtyLog::getInstanceFtylog()->setVeboseMode();
-    printf (" * subprocess: ");
 
     //  @selftest
     //  @end
-    printf ("Empty test - OK\n");
+    log_info ("subprocess-test: Empty test - OK\n");
 }
