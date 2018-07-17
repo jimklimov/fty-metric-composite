@@ -430,7 +430,7 @@ data_asset_store (data_t *self, fty_proto_t **message_p)
     }
 
     if (streq (operation, FTY_PROTO_ASSET_OP_DELETE) ||
-        streq (operation, FTY_PROTO_ASSET_OP_RETIRE) || 
+        streq (operation, FTY_PROTO_ASSET_OP_RETIRE) ||
         !streq(fty_proto_aux_string(message, FTY_PROTO_ASSET_STATUS, "active"), "active"))
     {
         void *exists = zhashx_lookup (self->all_assets, fty_proto_name (message));
@@ -2167,8 +2167,9 @@ test11 (bool verbose)
 void
 data_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("data-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
     printf (" * data: \n");
     //  @selftest

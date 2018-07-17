@@ -59,7 +59,6 @@ all_tests [] = {
 // Tests for stable/draft private classes:
 // Now built only with --enable-drafts, so even stable builds are hidden behind the flag
     { "actor_commands", NULL, true, false, "actor_commands_test" },
-    { "logger", NULL, true, false, "logger_test" },
     { "subprocess", NULL, true, false, "subprocess_test" },
     { "data", NULL, true, false, "data_test" },
     { "proto_metric_unavailable", NULL, true, false, "proto_metric_unavailable_test" },

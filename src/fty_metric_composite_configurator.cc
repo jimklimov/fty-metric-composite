@@ -143,12 +143,13 @@ int main (int argc, char *argv [])
         return EXIT_FAILURE;
     }
 
+    ManageFtyLog::setInstanceFtylog ("fty-metric-composite-configurator", LOG_CONFIG);
     // log_level cascade (priority ascending)
     //  1. default value
     //  2. env. variable
     //  3. command line argument
     //  4. actor message - NOT IMPLEMENTED YET
-    if (log_level == -1) {
+    /*if (log_level == -1) {
         char *env_log_level = getenv ("BIOS_LOG_LEVEL");
         if (env_log_level) {
             log_level = get_log_level (env_log_level);
@@ -159,7 +160,7 @@ int main (int argc, char *argv [])
             log_level = DEFAULT_LOG_LEVEL;
         }
     }
-    log_set_level (log_level);
+    log_set_level (log_level);*/
 
     // Set default state file on empty
     if (!state_file) {
@@ -173,7 +174,7 @@ int main (int argc, char *argv [])
 
     zactor_t *server = zactor_new (fty_metric_composite_configurator_server, (void *) AGENT_NAME);
     if (!server) {
-        log_critical ("zactor_new (task = 'fty_metric_composite_configurator_server', args = 'NULL') failed");
+        log_fatal ("zactor_new (task = 'fty_metric_composite_configurator_server', args = 'NULL') failed");
         zstr_free (&state_file);
         zstr_free (&output_dir);
         return EXIT_FAILURE;
@@ -189,7 +190,7 @@ int main (int argc, char *argv [])
     // one in a minute
     zloop_timer (check_configuration_trigger, 60*1000, 0, s_timer_event, server);
     zloop_start (check_configuration_trigger);
-    
+
     zloop_destroy (&check_configuration_trigger);
 
     zstr_free (&state_file);

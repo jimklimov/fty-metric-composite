@@ -62,7 +62,6 @@ endif
 
 EXTRA_DIST += \
     src/actor_commands.h \
-    src/logger.h \
     src/subprocess.h \
     src/data.h \
     src/proto_metric_unavailable.h \

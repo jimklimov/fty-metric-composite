@@ -39,10 +39,6 @@
 typedef struct _actor_commands_t actor_commands_t;
 #define ACTOR_COMMANDS_T_DEFINED
 #endif
-#ifndef LOGGER_T_DEFINED
-typedef struct _logger_t logger_t;
-#define LOGGER_T_DEFINED
-#endif
 #ifndef SUBPROCESS_T_DEFINED
 typedef struct _subprocess_t subprocess_t;
 #define SUBPROCESS_T_DEFINED
@@ -63,7 +59,6 @@ typedef struct _c_metric_conf_t c_metric_conf_t;
 //  Internal API
 
 #include "actor_commands.h"
-#include "logger.h"
 #include "subprocess.h"
 #include "data.h"
 #include "proto_metric_unavailable.h"
@@ -76,11 +71,6 @@ typedef struct _c_metric_conf_t c_metric_conf_t;
 //  Self test of this class.
 FTY_METRIC_COMPOSITE_PRIVATE void
     actor_commands_test (bool verbose);
-
-//  *** Draft method, defined for internal use only ***
-//  Self test of this class.
-FTY_METRIC_COMPOSITE_PRIVATE void
-    logger_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.

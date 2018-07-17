@@ -574,8 +574,9 @@ test_dir_contents (
 void
 fty_metric_composite_configurator_server_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("fty-metric-composite-configurator-server-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     static const char* endpoint = "inproc://bios-composite-configurator-server-test";
 
     //  @selftest

@@ -272,8 +272,9 @@ exit:
 void
 fty_metric_composite_server_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("fty-metric-composite-server-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     static const char* endpoint = "inproc://bios-cm-server-test";
 
     // Note: If your selftest reads SCMed fixture data, please keep it in

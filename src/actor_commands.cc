@@ -204,9 +204,9 @@ actor_commands (
 void
 actor_commands_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("actor-commands-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
-
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
     // do so under src/selftest-rw. They are defined below along with a
