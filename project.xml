@@ -67,7 +67,7 @@
     </use>
 
     <class name = "actor commands"              private = "1">actor commands</class>
-    <class name = "subprocess"                  private = "1">C++ Wrapper around cxxtools::Fork</class>
+    <class name = "comm_subprocess"             private = "1">C++ Wrapper around cxxtools::Fork from fty-common - to be moved there</class>
     <class name = "data"                        private = "1">composite metrics data structure</class>
     <class name = "proto-metric-unavailable"    private = "1">metric unavailable protocol send part</class>
     <class name = "c_metric_conf"               private = "1">structure that represents current start of composite-metrics-configurator</class>

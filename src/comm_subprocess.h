@@ -1,7 +1,7 @@
 /*  =========================================================================
-    subprocess - C++ Wrapper around cxxtools::Fork
+    comm_subprocess - C++ Wrapper around cxxtools::Fork from fty-common - to be moved there
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
     =========================================================================
 */
 
-#ifndef SUBPROCESS_H_INCLUDED
-#define SUBPROCESS_H_INCLUDED
+#ifndef COMM_SUBPROCESS_H_INCLUDED
+#define COMM_SUBPROCESS_H_INCLUDED
 
 #include <cxxtools/posix/fork.h>
 
@@ -201,6 +201,6 @@ output(
 
 //  Self test of this class
 void
-subprocess_test (bool verbose);
+comm_subprocess_test (bool verbose);
 
 #endif
