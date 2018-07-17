@@ -58,6 +58,8 @@ BuildRequires:  malamute-devel
 BuildRequires:  fty-proto-devel
 BuildRequires:  lua-devel
 BuildRequires:  cxxtools-devel
+BuildRequires:  log4cplus-devel
+BuildRequires:  fty-common-logging-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -89,6 +91,8 @@ Requires:       malamute-devel
 Requires:       fty-proto-devel
 Requires:       lua-devel
 Requires:       cxxtools-devel
+Requires:       log4cplus-devel
+Requires:       fty-common-logging-devel
 
 %description devel
 agent that computes new metrics from bunch of other metrics development tools
