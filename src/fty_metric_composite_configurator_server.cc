@@ -1041,9 +1041,7 @@ fty_metric_composite_configurator_server_test (bool verbose)
         printf ("Sleeping 1m for configurator kick in and finish\n");
         zclock_sleep (60000); // magical constant
 
-retry_block_1:
-
-        std::vector <std::string> expected_configs = {
+        std::vector <std::string> expected_configs_orig = {
             "Rack01-input-temperature.cfg",
             "Rack01-input-humidity.cfg",
             "Rack01-output-temperature.cfg",
@@ -1060,20 +1058,22 @@ retry_block_1:
 //            "Curie-humidity.cfg"
         };
 
+        std::vector <std::string> expected_configs (expected_configs_orig);
         int rv = test_dir_contents (test_state_dir, expected_configs);
         printf ("rv == %d\n", rv);
-        if ( rv != 0 && retry > 0) {
+        while ( rv != 0 && retry > 0) {
             printf ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
             zclock_sleep (retry);
             retry = 0;
             printf ("Checking the directory again...");
-            goto retry_block_1;
+            std::vector <std::string> expected_configs_retry (expected_configs_orig);
+            rv = test_dir_contents (test_state_dir, expected_configs_retry);
         }
 
         assert (rv == 0);
 
         // Cleanup after the test bit
-        for (std::string &it : expected_configs) {
+        for (std::string &it : expected_configs_orig) {
             char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
             assert (expected_filename != NULL);
             if (verbose) printf("TRACE BLOCK-1 zsys_file_delete('%s')", expected_filename);
@@ -1322,10 +1322,11 @@ retry_block_1:
 
     printf ("TRACE ---===### (Test block -2-) ###===---\n");
     {
+        uint64_t retry = 20000;
         printf ("Sleeping 1m for configurator kick in and finish\n");
         zclock_sleep (60000);
 
-        std::vector <std::string> expected_configs = {
+        std::vector <std::string> expected_configs_orig = {
             "Rack01-input-temperature.cfg",
             "Rack01-input-humidity.cfg",
             "Rack01-output-temperature.cfg",
@@ -1342,7 +1343,18 @@ retry_block_1:
 //            "Curie-humidity.cfg"
         };
 
+        std::vector <std::string> expected_configs (expected_configs_orig);
         int rv = test_dir_contents (test_state_dir, expected_configs);
+        printf ("rv == %d\n", rv);
+        while ( rv != 0 && retry > 0) {
+            printf ("Sleeping %" PRIu64 "msec for configurator kick in and finish - laggy tester?\n", retry);
+            zclock_sleep (retry);
+            retry = 0;
+            printf ("Checking the directory again...");
+            std::vector <std::string> expected_configs_retry (expected_configs_orig);
+            rv = test_dir_contents (test_state_dir, expected_configs_retry);
+        }
+
         printf ("rv == %d\n", rv);
         assert (rv == 0);
 
@@ -1350,7 +1362,6 @@ retry_block_1:
         zlistx_set_duplicator (expected_unavailable, (czmq_duplicator *) strdup);
         zlistx_set_destructor (expected_unavailable, (czmq_destructor *) zstr_free);
         zlistx_set_comparator (expected_unavailable, (czmq_comparator *) strcmp);
-
 
         zlistx_add_end (expected_unavailable, (void *) "average.humidity-input@Rack02");
         zlistx_add_end (expected_unavailable, (void *) "average.temperature-input@Rack02");
@@ -1380,7 +1391,7 @@ retry_block_1:
         }
 
         // Cleanup after the test bit
-        for (std::string &it : expected_configs) {
+        for (std::string &it : expected_configs_orig) {
             char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
             assert (expected_filename != NULL);
             if (verbose) printf("TRACE BLOCK-2 zsys_file_delete('%s')", expected_filename);
