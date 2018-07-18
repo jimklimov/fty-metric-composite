@@ -1,7 +1,7 @@
 /*  =========================================================================
-    subprocess - C++ Wrapper around cxxtools::Fork
+    comm_subprocess - C++ Wrapper around cxxtools::Fork from fty-common - to be moved there
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 /*
 @header
-    subprocess - C++ Wrapper around cxxtools::Fork
+    comm_subprocess - C++ Wrapper around cxxtools::Fork from fty-common - to be moved there
 @discuss
 @end
 */
@@ -519,13 +519,13 @@ static int s_output2(SubProcess& p, std::string& o, uint64_t timeout, size_t tim
 //  Self test of this class
 
 void
-subprocess_test (bool verbose)
+comm_subprocess_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("subprocess-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
-    printf (" * subprocess: ");
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
     //  @selftest
     //  @end
-    printf ("Empty test - OK\n");
+    log_info ("subprocess-test: Empty test - OK\n");
 }

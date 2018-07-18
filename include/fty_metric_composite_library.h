@@ -35,6 +35,7 @@
 #include <ftyproto.h>
 #include <lua.hpp>
 #include <cxxtools/allocator.h>
+#include <fty_log.h>
 
 //  FTY_METRIC_COMPOSITE version macros for compile-time API detection
 #define FTY_METRIC_COMPOSITE_VERSION_MAJOR 1

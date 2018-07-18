@@ -69,7 +69,6 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
     static const uint64_t TTL = 5*60;
     std::map<std::string, value> cache;
     std::string lua_code;
-    bool verbose = false;
     int phase = 0;
 
     char *name = strdup ((char*) args);
@@ -86,21 +85,13 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
         if (which == pipe) {
             zmsg_t *msg = zmsg_recv (pipe);
             char *cmd = zmsg_popstr (msg);
-            if ( verbose ) {
-                zsys_debug ("actor command=%s", cmd);
-            }
+            log_trace ("actor command=%s", cmd);
 
             if (streq (cmd, "$TERM")) {
-                zsys_info ("Got $TERM");
+                log_info ("Got $TERM");
                 zstr_free (&cmd);
                 zmsg_destroy (&msg);
                 goto exit;
-            }
-            else
-            if (streq (cmd, "VERBOSE")) {
-                verbose = true;
-                zsys_error ("VERBOSE VERBOSE VERBOSE");
-                zmsg_destroy (&msg);
             }
             else
             if (streq (cmd, "CONNECT")) {
@@ -108,7 +99,7 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
                 mlm_client_connect(client, endpoint, 1000, name);
                 int rv = mlm_client_set_producer(client, "METRICS");
                 if (rv == -1) {
-                    zsys_error ("mlm_client_set_producer () failed.");
+                    log_error ("mlm_client_set_producer () failed.");
                 }
                 zstr_free(&endpoint);
                 phase = 1;
@@ -116,15 +107,14 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
             else
             if (streq (cmd, "CONFIG")) {
                 if(phase < 1) {
-                    zsys_error("CONFIG before CONNECT");
+                    log_error("CONFIG before CONNECT");
                     continue;
                 }
                 char* filename = zmsg_popstr (msg);
-                if (verbose)
-                    zsys_debug ("%s:\tOpening '%s'", name, filename);
+                log_trace ("%s:\tOpening '%s'", name, filename);
                 std::ifstream f(filename);
                 if ( !f.good() ) {
-                    zsys_error ("%s:\tCannot open config file '%s' correctly", name, filename);
+                    log_error ("%s:\tCannot open config file '%s' correctly", name, filename);
                     zstr_free (&filename);
                     zstr_free (&cmd);
                     zmsg_destroy (&msg);
@@ -145,14 +135,13 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
                         cache[buff] = expired;
                         buff = "^" + escape_regex (buff) + "$";
                         mlm_client_set_consumer(client, "_METRICS_SENSOR", buff.c_str());
-                        if (verbose)
-                            zsys_debug("%s: Registered to receive '%s' from stream '%s'", name, buff.c_str(), "_METRICS_SENSOR");
+                        log_trace ("%s: Registered to receive '%s' from stream '%s'", name, buff.c_str(), "_METRICS_SENSOR");
                     }
                     zstr_free (&filename);
                     phase = 2;
                 }
                 catch ( const std::exception &e ) {
-                    zsys_error ("Cannot deserialize cfg file! with '%s'", e.what());
+                    log_error ("Cannot deserialize cfg file! with '%s'", e.what());
                     zstr_free (&filename);
                     zstr_free (&cmd);
                     zmsg_destroy (&msg);
@@ -165,23 +154,17 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
         }
 
         if(phase < 2) {
-            zsys_error("DATA before CONFIG");
+            log_error("DATA before CONFIG");
             continue;
         }
 
         // Get message
         zmsg_t *msg = mlm_client_recv(client);
-        if(verbose)
-            zsys_debug("Got something not from the pipe");
         if(msg == NULL)
             continue;
-        if(verbose)
-            zsys_debug("It is not null");
         fty_proto_t *yn = fty_proto_decode(&msg);
         if(yn == NULL)
             continue;
-        if(verbose)
-            zsys_debug("And it is fty_proto_message");
 
         // Update cache with updated values
         std::string topic = mlm_client_subject(client);
@@ -190,8 +173,7 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
         uint32_t ttl = fty_proto_ttl(yn);
         uint64_t timestamp = fty_proto_time (yn);
         val.valid_till = timestamp + ttl;
-        if (verbose)
-            zsys_debug ("%s: Got message '%s' with value %lf", name, topic.c_str(), val.value);
+        log_trace ("%s: Got message '%s' with value %lf", name, topic.c_str(), val.value);
         auto f = cache.find(topic);
         if(f != cache.end()) {
             f->second = val;
@@ -215,8 +197,7 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
                 // can't count average, missing measurements from sensor
                 continue;
             }
-            if (verbose)
-                zsys_debug ("%s - %s, %f", name, i.first.c_str(), i.second.value);
+            log_trace ("%s - %s, %f", name, i.first.c_str(), i.second.value);
             lua_pushstring(L, i.first.c_str());
             lua_pushnumber(L, i.second.value);
             lua_settable(L, -3);
@@ -227,18 +208,17 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
         error = luaL_loadbuffer(L, lua_code.c_str(), lua_code.length(), "line") ||
             lua_pcall(L, 0, 3, 0);
         if(error) {
-            zsys_error("%s", lua_tostring(L, -1));
+            log_error("%s", lua_tostring(L, -1));
             goto next_iter;
         }
-        if (verbose)
-            zsys_debug ("%s: Total: %d", name, lua_gettop(L));
+        log_trace ("%s: Total: %d", name, lua_gettop(L));
         if(lua_gettop(L) == 3) {
             if(strrchr(lua_tostring(L, -3), '@') == NULL) {
-                zsys_error ("Invalid output topic");
+                log_error ("Invalid output topic");
                 goto next_iter;
             }
             fty_proto_t *n_met = fty_proto_new(FTY_PROTO_METRIC);
-            zsys_debug ("Creating new bios proto message");
+            log_debug ("Creating new bios proto message");
             char *buff = strdup(lua_tostring(L, -3));
             fty_proto_set_name (n_met, "%s", strrchr(buff, '@') + 1);
             (*strrchr(buff, '@')) = 0;
@@ -250,11 +230,11 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
             zmsg_t* z_met = fty_proto_encode(&n_met);
             int rv = mlm_client_send(client, lua_tostring(L, -3), &z_met);
             if (rv != 0) {
-                zsys_error ("mlm_client_send () failed.");
+                log_error ("mlm_client_send () failed.");
             }
             free (buff);
         } else {
-            zsys_error ("Not enough valid data...\n");
+            log_error ("Not enough valid data...\n");
         }
 next_iter:
         lua_close(L);
@@ -272,8 +252,9 @@ exit:
 void
 fty_metric_composite_server_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("fty-metric-composite-server-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     static const char* endpoint = "inproc://bios-cm-server-test";
 
     // Note: If your selftest reads SCMed fixture data, please keep it in
@@ -286,10 +267,6 @@ fty_metric_composite_server_test (bool verbose)
     assert (SELFTEST_DIR_RW);
     // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
     // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
-
-    printf (" * fty_composite_metrics_server: ");
-    if (verbose)
-        printf ("\n");
 
     //  @selftest
     zactor_t *server = zactor_new (mlm_server, (void*) "Malamute");
@@ -305,14 +282,12 @@ fty_metric_composite_server_test (bool verbose)
 
     char *name = NULL;
     if(asprintf(&name, "composite-metrics-%s", "sd") < 0) {
-        zsys_error ("Can't allocate name of agent");
+        log_error ("Can't allocate name of agent");
         exit(1);
     }
 
     zactor_t *cm_server = zactor_new (fty_metric_composite_server, (void*) name);
     free(name);
-    if (verbose)
-        zstr_send (cm_server, "VERBOSE");
     zstr_sendx (cm_server, "CONNECT", endpoint, NULL);
     char *test_config_file = zsys_sprintf ("%s/fty-metric-composite.cfg.example", SELFTEST_DIR_RO);
     assert (test_config_file != NULL);
@@ -346,7 +321,7 @@ fty_metric_composite_server_test (bool verbose)
     msg_out = mlm_client_recv (consumer);
     m = fty_proto_decode (&msg_out);
     assert (m);
-    zsys_error("value %s", fty_proto_value (m));    // <<< (100 + 40) / 2
+    log_error("value %s", fty_proto_value (m));    // <<< (100 + 40) / 2
     assert (streq (fty_proto_value (m), "70.00"));    // <<< (100 + 40) / 2
     fty_proto_destroy (&m);
 
@@ -368,5 +343,5 @@ fty_metric_composite_server_test (bool verbose)
     zactor_destroy (&server);
 
     // @end
-    printf ("OK\n");
+    log_info ("OK\n");
 }

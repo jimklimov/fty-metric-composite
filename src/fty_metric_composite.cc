@@ -1,21 +1,21 @@
 /*  =========================================================================
     fty_metric_composite - Metrics calculator
 
-    Copyright (C) 2014 - 2017 Eaton                                        
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2014 - 2017 Eaton
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -60,9 +60,11 @@ main (int argc, char** argv) {
         if (tmp_arg[tmp_i] == '/') { tmp_basename = tmp_arg + tmp_i + 1; }
     }
     if(asprintf(&name, "fty-metric-composite-%s", tmp_basename) < 0) {
-        zsys_error("Can't allocate name of agent\n");
+        log_error("Can't allocate name of agent\n");
         exit(1);
     }
+
+    ManageFtyLog::setInstanceFtylog (name, LOG_CONFIG);
     zactor_t *cm_server = zactor_new (fty_metric_composite_server, (void*) name);
     free(name);
     free(tmp_arg);
@@ -70,8 +72,6 @@ main (int argc, char** argv) {
 
     zstr_sendx (cm_server, "CONNECT", "ipc://@/malamute", NULL);
     zclock_sleep (500);  // to settle down the things
-    if(strcmp(getenv("BIOS_LOG_LEVEL"), "LOG_DEBUG") == 0)
-        zstr_sendx (cm_server, "VERBOSE", NULL);
     zstr_sendx (cm_server, "CONFIG", argv[1], NULL);
 
     //  Accept and print any message back from server

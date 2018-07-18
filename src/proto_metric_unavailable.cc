@@ -56,16 +56,12 @@ proto_metric_unavailable_send (mlm_client_t *client, const char *topic)
 void
 proto_metric_unavailable_test (bool verbose)
 {
-    if ( verbose ) 
-        log_set_level (LOG_DEBUG);
-    printf (" * proto_metric_unavailable: ");
+    ManageFtyLog::setInstanceFtylog ("proto-metric-unavailable-test", "");
+    if ( verbose )
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
     //  @selftest
     static const char* endpoint = "inproc://proto-metric-unavailable-server-test";
-
-    printf (" * bios_composite_metrics_configurator_server: ");
-    if (verbose)
-        printf ("\n");
 
     zactor_t *server = zactor_new (mlm_server, (void*) "Malamute");
     zstr_sendx (server, "BIND", endpoint, NULL);
@@ -98,5 +94,5 @@ proto_metric_unavailable_test (bool verbose)
     mlm_client_destroy (&consumer);
     zactor_destroy (&server);
     //  @end
-    printf ("OK\n");
+    log_info ("proto-metric-unavailable-test: OK\n");
 }

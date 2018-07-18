@@ -204,9 +204,9 @@ actor_commands (
 void
 actor_commands_test (bool verbose)
 {
+    ManageFtyLog::setInstanceFtylog ("actor-commands-test", "");
     if ( verbose )
-        log_set_level (LOG_DEBUG);
-
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
     // do so under src/selftest-rw. They are defined below along with a
@@ -221,7 +221,6 @@ actor_commands_test (bool verbose)
     char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
     assert (test_state_file != NULL);
 
-    printf (" * actor_commands: ");
     //  @selftest
     static const char* endpoint = "ipc://bios-actor-commands-test";
     // malamute broker
@@ -468,5 +467,5 @@ actor_commands_test (bool verbose)
     zstr_free (&test_state_file);
     zactor_destroy (&malamute);
     //  @end
-    printf ("OK\n");
+    log_info ("actor-commands-test OK\n");
 }
