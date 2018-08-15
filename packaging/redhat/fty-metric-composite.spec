@@ -60,6 +60,7 @@ BuildRequires:  lua-devel
 BuildRequires:  cxxtools-devel
 BuildRequires:  log4cplus-devel
 BuildRequires:  fty-common-logging-devel
+BuildRequires:  fty-common-mlm-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -93,6 +94,7 @@ Requires:       lua-devel
 Requires:       cxxtools-devel
 Requires:       log4cplus-devel
 Requires:       fty-common-logging-devel
+Requires:       fty-common-mlm-devel
 
 %description devel
 agent that computes new metrics from bunch of other metrics development tools
