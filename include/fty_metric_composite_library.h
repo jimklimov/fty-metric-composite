@@ -30,12 +30,10 @@
 //  Set up environment for the application
 
 //  External dependencies
-#include <czmq.h>
-#include <malamute.h>
-#include <ftyproto.h>
 #include <lua.hpp>
-#include <cxxtools/allocator.h>
 #include <fty_log.h>
+#include <fty_common_mlm.h>
+#include <ftyproto.h>
 
 //  FTY_METRIC_COMPOSITE version macros for compile-time API detection
 #define FTY_METRIC_COMPOSITE_VERSION_MAJOR 1

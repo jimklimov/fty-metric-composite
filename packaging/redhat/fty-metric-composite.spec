@@ -51,15 +51,16 @@ BuildRequires:  systemd
 %{?systemd_requires}
 BuildRequires:  xmlto
 BuildRequires:  gcc-c++
-BuildRequires:  libsodium-devel
+BuildRequires:  lua-devel
+BuildRequires:  log4cplus-devel
+BuildRequires:  fty-common-logging-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
-BuildRequires:  fty-proto-devel
-BuildRequires:  lua-devel
 BuildRequires:  cxxtools-devel
-BuildRequires:  log4cplus-devel
-BuildRequires:  fty-common-logging-devel
+BuildRequires:  libsodium-devel
+BuildRequires:  fty-common-mlm-devel
+BuildRequires:  fty-proto-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -84,15 +85,16 @@ This package contains shared library for fty-metric-composite: agent that comput
 Summary:        agent that computes new metrics from bunch of other metrics
 Group:          System/Libraries
 Requires:       libfty_metric_composite0 = %{version}
-Requires:       libsodium-devel
+Requires:       lua-devel
+Requires:       log4cplus-devel
+Requires:       fty-common-logging-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
-Requires:       fty-proto-devel
-Requires:       lua-devel
 Requires:       cxxtools-devel
-Requires:       log4cplus-devel
-Requires:       fty-common-logging-devel
+Requires:       libsodium-devel
+Requires:       fty-common-mlm-devel
+Requires:       fty-proto-devel
 
 %description devel
 agent that computes new metrics from bunch of other metrics development tools

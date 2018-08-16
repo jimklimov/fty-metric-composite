@@ -40,8 +40,6 @@ fty_metric_composite_private_selftest (bool verbose, const char *subtest)
 // Tests for stable private classes:
     if (streq (subtest, "$ALL") || streq (subtest, "actor_commands_test"))
         actor_commands_test (verbose);
-    if (streq (subtest, "$ALL") || streq (subtest, "comm_subprocess_test"))
-        comm_subprocess_test (verbose);
     if (streq (subtest, "$ALL") || streq (subtest, "data_test"))
         data_test (verbose);
     if (streq (subtest, "$ALL") || streq (subtest, "proto_metric_unavailable_test"))

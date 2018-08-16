@@ -14,7 +14,6 @@ pkgconfig_DATA = src/libfty_metric_composite.pc
 
 src_libfty_metric_composite_la_SOURCES = \
     src/actor_commands.cc \
-    src/comm_subprocess.cc \
     src/data.cc \
     src/proto_metric_unavailable.cc \
     src/c_metric_conf.cc \
