@@ -42,7 +42,7 @@ s_bits_systemctl (const char *operation, const char *service)
 
     std::vector <std::string> _argv = {"sudo", "systemctl", operation, service};
 
-    SubProcess systemd (_argv);
+    MlmSubprocess::SubProcess systemd (_argv);
     if (systemd.run()) {
         int result = systemd.wait (false);
         log_info ("sudo systemctl '%s' '%s' result  == %i (%s)",
