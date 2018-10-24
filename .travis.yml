@@ -64,14 +64,16 @@ pkg_deps_prereqs_distro: &pkg_deps_prereqs_distro
 # Prerequisite packages that may be built from source or used from
 # prebuilt packages of that source (usually not from an OS distro)
 pkg_deps_prereqs_source: &pkg_deps_prereqs_source
+    - log4cplus-dev
+    - libfty-common-logging-dev
+    - libfty-common-dev
     - libsodium-dev
     - libzmq3-dev
     - libczmq-dev
     - libmlm-dev
-    - libfty-proto-dev
     - cxxtools-dev
-    - log4cplus-dev
-    - libfty-common-logging-dev
+    - libfty-common-mlm-dev
+    - libfty-proto-dev
 
 # NOTE: Our forks are checked out and built without pkg dependencies in use
 pkg_deps_prereqs: &pkg_deps_prereqs
