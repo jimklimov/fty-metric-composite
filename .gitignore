@@ -82,12 +82,7 @@ CMake*
 *.cmake
 
 # Repositories downloaded by CI integration scripts
-libsodium/
-libzmq/
-czmq/
-malamute/
-fty-proto/
-cxxtools/
+tmp-deps/
 
 # Travis build area
 tmp/

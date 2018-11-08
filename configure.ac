@@ -455,6 +455,184 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_common_logging
 dnl END of enabled attempts to search for libfty_common_logging
 
 
+was_fty_common_check_lib_detected=no
+
+search_libfty_common="yes"
+
+AC_ARG_WITH([libfty_common],
+    [
+        AS_HELP_STRING([--with-libfty_common],
+        [yes or no. Optionally specify libfty_common prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_libfty_common="yes"
+    ],
+    [
+        search_libfty_common="yes"
+    ])
+AS_CASE([x"${with_libfty_common}"],
+    [xyes], [search_libfty_common="yes"],
+    [xno],  [search_libfty_common="no"])
+
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_libfty_common}" = xno],
+    [AC_MSG_WARN([Required dependency on fty_common was explicitly disabled during configuration by '--with-libfty_common=no'; subsequent full build of fty-metric-composite may fail])])
+
+AS_IF([test x"${search_libfty_common}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
+    found_pkgconfig=""
+    found_linkname=""
+    PKG_CHECK_MODULES([fty_common], [libfty_common >= 0.0.0],
+    [
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $fty_common_LIBS"
+        was_fty_common_check_lib_detected=pkgcfg
+        found_pkgconfig="libfty_common"
+    ],
+    [
+        AC_MSG_NOTICE([Package libfty_common not found; falling back to defined compilability tests])
+
+        fty_common_synthetic_cflags=""
+        fty_common_synthetic_libs="-lfty-common"
+
+        if test -n "${with_libfty_common}" && test x"${with_libfty_common}" != xyes && test x"${with_libfty_common}" != xno; then
+            if test -r "${with_libfty_common}/include/fty_common.h"; then
+                fty_common_synthetic_cflags="-I${with_libfty_common}/include"
+                fty_common_synthetic_libs="-L${with_libfty_common}/lib -lfty-common"
+            else
+            AC_MSG_ERROR([Header file ${with_libfty_common}/include/fty_common.h was not found. Please check libfty_common prefix])
+            fi
+        else
+            AC_CHECK_HEADER([fty_common.h], [],
+            AC_MSG_ERROR([Header file fty_common.h was not found in default search paths])
+                )
+        fi
+
+        AC_CHECK_LIB([fty-common], [fty_commmon_selftest],
+            [
+                was_fty_common_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty-common"
+                found_linkname="fty-common"
+            ],
+            [AC_MSG_ERROR([cannot link with -lfty-common, install libfty_common])])
+    ])
+
+dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_common
+    AS_CASE(["x${was_fty_common_check_lib_detected}"],
+        [xpkgcfg], [
+                AC_SUBST([pkgconfig_name_libfty_common],[${found_pkgconfig}])
+                CFLAGS="${fty_common_CFLAGS} ${CFLAGS}"
+                LIBS="${fty_common_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                AC_SUBST([pkgconfig_name_libfty_common],[${found_linkname}])
+                CFLAGS="${fty_common_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${fty_common_synthetic_libs} ${LDFLAGS}"
+                LIBS="${fty_common_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([fty_common_CFLAGS],[${fty_common_synthetic_cflags}])
+                AC_SUBST([fty_common_LIBS],[${fty_common_synthetic_libs}])
+            ],
+        [xno], [
+                AC_SUBST([pkgconfig_name_libfty_common],[libfty_common])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libfty_common 0.0.0 or higher])
+    ])
+])
+dnl END of enabled attempts to search for libfty_common
+
+
+was_libsodium_check_lib_detected=no
+
+search_libsodium="yes"
+
+AC_ARG_WITH([libsodium],
+    [
+        AS_HELP_STRING([--with-libsodium],
+        [yes or no. Optionally specify libsodium prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_libsodium="yes"
+    ],
+    [
+        search_libsodium="yes"
+    ])
+AS_CASE([x"${with_libsodium}"],
+    [xyes], [search_libsodium="yes"],
+    [xno],  [search_libsodium="no"])
+
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_libsodium}" = xno],
+    [AC_MSG_WARN([Required dependency on libsodium was explicitly disabled during configuration by '--with-libsodium=no'; subsequent full build of fty-metric-composite may fail])])
+
+AS_IF([test x"${search_libsodium}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
+    found_pkgconfig=""
+    found_linkname=""
+    PKG_CHECK_MODULES([libsodium], [libsodium >= 0.0.0],
+    [
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $libsodium_LIBS"
+        was_libsodium_check_lib_detected=pkgcfg
+        found_pkgconfig="libsodium"
+    ],
+    [
+        AC_MSG_NOTICE([Package libsodium not found; falling back to defined compilability tests])
+
+        libsodium_synthetic_cflags=""
+        libsodium_synthetic_libs="-lsodium"
+
+        if test -n "${with_libsodium}" && test x"${with_libsodium}" != xyes && test x"${with_libsodium}" != xno; then
+            if test -r "${with_libsodium}/include/sodium.h"; then
+                libsodium_synthetic_cflags="-I${with_libsodium}/include"
+                libsodium_synthetic_libs="-L${with_libsodium}/lib -lsodium"
+            else
+            AC_MSG_ERROR([Header file ${with_libsodium}/include/sodium.h was not found. Please check libsodium prefix])
+            fi
+        else
+            AC_CHECK_HEADER([sodium.h], [],
+            AC_MSG_ERROR([Header file sodium.h was not found in default search paths])
+                )
+        fi
+
+        AC_CHECK_LIB([sodium], [sodium_init],
+            [
+                was_libsodium_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lsodium"
+                found_linkname="sodium"
+            ],
+            [AC_MSG_ERROR([cannot link with -lsodium, install libsodium])])
+    ])
+
+dnl END of PKG_CHECK_MODULES and/or direct tests for libsodium
+    AS_CASE(["x${was_libsodium_check_lib_detected}"],
+        [xpkgcfg], [
+                AC_SUBST([pkgconfig_name_libsodium],[${found_pkgconfig}])
+                CFLAGS="${libsodium_CFLAGS} ${CFLAGS}"
+                LIBS="${libsodium_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                AC_SUBST([pkgconfig_name_libsodium],[${found_linkname}])
+                CFLAGS="${libsodium_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${libsodium_synthetic_libs} ${LDFLAGS}"
+                LIBS="${libsodium_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([libsodium_CFLAGS],[${libsodium_synthetic_cflags}])
+                AC_SUBST([libsodium_LIBS],[${libsodium_synthetic_libs}])
+            ],
+        [xno], [
+                AC_SUBST([pkgconfig_name_libsodium],[libsodium])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libsodium 0.0.0 or higher])
+    ])
+])
+dnl END of enabled attempts to search for libsodium
+
+
 was_libzmq_check_lib_detected=no
 
 search_libzmq="yes"
@@ -575,14 +753,14 @@ AS_IF([test x"${search_libczmq}" = xyes], [
 
     found_pkgconfig=""
     found_linkname=""
-    PKG_CHECK_MODULES([czmq], [libczmq >= 0.0.0],
+    PKG_CHECK_MODULES([czmq], [libczmq >= 3.0.2],
     [
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $czmq_LIBS"
         was_czmq_check_lib_detected=pkgcfg
         found_pkgconfig="libczmq"
     ],
     [
-        AC_MSG_NOTICE([Package libczmq not found; falling back to defined compilability tests])
+        AC_MSG_NOTICE([Package libczmq not found with needed constraints; falling back to defined compilability tests])
 
         czmq_synthetic_cflags=""
         czmq_synthetic_libs="-lczmq"
@@ -627,7 +805,7 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libczmq
             ],
         [xno], [
                 AC_SUBST([pkgconfig_name_libczmq],[libczmq])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for libczmq 0.0.0 or higher])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libczmq 3.0.2 or higher])
     ])
 ])
 dnl END of enabled attempts to search for libczmq
@@ -809,95 +987,6 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for cxxtools
     ])
 ])
 dnl END of enabled attempts to search for cxxtools
-
-
-was_libsodium_check_lib_detected=no
-
-search_libsodium="yes"
-
-AC_ARG_WITH([libsodium],
-    [
-        AS_HELP_STRING([--with-libsodium],
-        [yes or no. Optionally specify libsodium prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
-    ],
-    [
-        search_libsodium="yes"
-    ],
-    [
-        search_libsodium="yes"
-    ])
-AS_CASE([x"${with_libsodium}"],
-    [xyes], [search_libsodium="yes"],
-    [xno],  [search_libsodium="no"])
-
-dnl We do not abort right now, because the maintainer/developer may have
-dnl something particular in mind, e.g. to build just parts of a project.
-AS_IF([test x"${search_libsodium}" = xno],
-    [AC_MSG_WARN([Required dependency on libsodium was explicitly disabled during configuration by '--with-libsodium=no'; subsequent full build of fty-metric-composite may fail])])
-
-AS_IF([test x"${search_libsodium}" = xyes], [
-    # Archive previously detected and supplied flags
-    PRE_SEARCH_CFLAGS="${CFLAGS}"
-    PRE_SEARCH_LIBS="${LIBS}"
-
-    found_pkgconfig=""
-    found_linkname=""
-    PKG_CHECK_MODULES([libsodium], [libsodium >= 0.0.0],
-    [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $libsodium_LIBS"
-        was_libsodium_check_lib_detected=pkgcfg
-        found_pkgconfig="libsodium"
-    ],
-    [
-        AC_MSG_NOTICE([Package libsodium not found; falling back to defined compilability tests])
-
-        libsodium_synthetic_cflags=""
-        libsodium_synthetic_libs="-lsodium"
-
-        if test -n "${with_libsodium}" && test x"${with_libsodium}" != xyes && test x"${with_libsodium}" != xno; then
-            if test -r "${with_libsodium}/include/sodium.h"; then
-                libsodium_synthetic_cflags="-I${with_libsodium}/include"
-                libsodium_synthetic_libs="-L${with_libsodium}/lib -lsodium"
-            else
-            AC_MSG_ERROR([Header file ${with_libsodium}/include/sodium.h was not found. Please check libsodium prefix])
-            fi
-        else
-            AC_CHECK_HEADER([sodium.h], [],
-            AC_MSG_ERROR([Header file sodium.h was not found in default search paths])
-                )
-        fi
-
-        AC_CHECK_LIB([sodium], [sodium_init],
-            [
-                was_libsodium_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lsodium"
-                found_linkname="sodium"
-            ],
-            [AC_MSG_ERROR([cannot link with -lsodium, install libsodium])])
-    ])
-
-dnl END of PKG_CHECK_MODULES and/or direct tests for libsodium
-    AS_CASE(["x${was_libsodium_check_lib_detected}"],
-        [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_libsodium],[${found_pkgconfig}])
-                CFLAGS="${libsodium_CFLAGS} ${CFLAGS}"
-                LIBS="${libsodium_LIBS} ${LIBS}"
-            ],
-        [xyes], [
-                AC_SUBST([pkgconfig_name_libsodium],[${found_linkname}])
-                CFLAGS="${libsodium_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${libsodium_synthetic_libs} ${LDFLAGS}"
-                LIBS="${libsodium_synthetic_libs} ${LIBS}"
-
-                AC_SUBST([libsodium_CFLAGS],[${libsodium_synthetic_cflags}])
-                AC_SUBST([libsodium_LIBS],[${libsodium_synthetic_libs}])
-            ],
-        [xno], [
-                AC_SUBST([pkgconfig_name_libsodium],[libsodium])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for libsodium 0.0.0 or higher])
-    ])
-])
-dnl END of enabled attempts to search for libsodium
 
 
 was_fty_common_mlm_check_lib_detected=no
