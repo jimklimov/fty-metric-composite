@@ -91,11 +91,6 @@ FTY_METRIC_COMPOSITE_EXPORT zlistx_t *
 FTY_METRIC_COMPOSITE_EXPORT fty_proto_t *
     data_asset (data_t *self, const char *name);
 
-//  Save data to disk
-//  0 - success, -1 - error
-FTY_METRIC_COMPOSITE_EXPORT int
-    data_save (data_t *self, const char *filename);
-
 //  Load nut from disk
 //  0 - success, -1 - error
 FTY_METRIC_COMPOSITE_EXPORT data_t *

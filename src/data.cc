@@ -582,10 +582,12 @@ data_asset (data_t *self, const char *name)
 //  --------------------------------------------------------------------------
 //  Save data to disk
 //  0 - success, -1 - error
-
+    //TODO clean it
+     /*
 int
 data_save (data_t *self, const char * filename)
 {
+
     assert (self);
     zconfig_t *root = zconfig_new ("nobody_cares", NULL);
     if (!root) {
@@ -655,7 +657,9 @@ data_save (data_t *self, const char * filename)
     int r = zconfig_save (root, filename);
     zconfig_destroy (&root);
     return r;
+     
 }
+*/ 
 
 //  --------------------------------------------------------------------------
 //  Load data from disk
@@ -664,6 +668,8 @@ data_save (data_t *self, const char * filename)
 data_t *
 data_load (const char *filename)
 {
+    //TODO do it from fty-asset request
+    /*
     if ( !filename )
         return NULL;
 
@@ -723,6 +729,7 @@ data_load (const char *filename)
     }
     zconfig_destroy (&root);
     return self;
+     */ 
 }
 
 //  --------------------------------------------------------------------------
@@ -864,135 +871,6 @@ data_compare (data_t *source, data_t *target, bool verbose) {
             }
         }
     }
-}
-
-static void
-test4 (bool verbose)
-{
-    log_debug ("Test4: save/load test");
-
-    // Note: If your selftest reads SCMed fixture data, please keep it in
-    // src/selftest-ro; if your test creates filesystem objects, please
-    // do so under src/selftest-rw. They are defined below along with a
-    // usecase (asert) to make compilers happy.
-    const char *SELFTEST_DIR_RO = "src/selftest-ro";
-    const char *SELFTEST_DIR_RW = "src/selftest-rw";
-    assert (SELFTEST_DIR_RO);
-    assert (SELFTEST_DIR_RW);
-    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
-    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
-
-    char *test_state_file = zsys_sprintf ("%s/state_file_test4", SELFTEST_DIR_RW);
-    assert (test_state_file != NULL);
-    char *test_state_file1 = zsys_sprintf ("%s/state_file_test4-1", SELFTEST_DIR_RW);
-    assert (test_state_file1 != NULL);
-
-    data_t *self = NULL;
-    data_t *self_load = NULL;
-    fty_proto_t *asset = NULL;
-
-    // just ipc_name
-    self = data_new ();
-    data_set_ipc (self, "IPC");
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // one asset without AUX without EXT
-    asset = test_asset_new ("some_asset", FTY_PROTO_ASSET_OP_CREATE);
-    self = data_new ();
-    data_asset_store (self, &asset);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // one asset without EXT
-    asset = test_asset_new ("some_asset_without_ext", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_aux_insert (asset, "type", "%s", "datacenter");
-    fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
-    self = data_new ();
-
-    data_asset_store (self, &asset);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // one asset without AUX
-    asset = test_asset_new ("some_asset_without_aux", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_ext_insert (asset, "type", "%s", "datacenter");
-    fty_proto_ext_insert (asset, "subtype", "%s", "unknown");
-    self = data_new ();
-
-    data_asset_store (self, &asset);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // three assets + reassign + metrics
-    self = data_new ();
-
-    asset = test_asset_new ("TEST4_DC", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_ext_insert (asset, "type", "%s", "datacenter");
-    fty_proto_ext_insert (asset, "subtype", "%s", "unknown");
-    data_asset_store (self, &asset);
-
-    asset = test_asset_new ("TEST4_RACK", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST4_DC");
-    fty_proto_aux_insert (asset, "type", "%s", "rack");
-    fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
-    data_asset_store (self, &asset);
-
-    asset = test_asset_new ("TEST4_SENSOR", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST4_UPS");
-    fty_proto_aux_insert (asset, "type", "%s", "device");
-    fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
-    fty_proto_ext_insert (asset, "port", "%s", "TH2");
-    fty_proto_ext_insert (asset, "calibration_offset_t", "%s", "2");
-    fty_proto_ext_insert (asset, "calibration_offset_h", "%s", "20");
-    fty_proto_ext_insert (asset, "sensor_function", "%s", "input");
-    fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST4_RACK");
-    data_asset_store (self, &asset);
-
-    data_reassign_sensors (self, true);
-    std::set <std::string> metrics {"topic1", "topic2"};
-    data_set_produced_metrics (self, metrics);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-
-    data_save (self_load, test_state_file1);
-    data_t *self_load_load = data_load (test_state_file1);
-    data_compare (self, self_load_load, verbose);
-
-    data_destroy (&self);
-    data_destroy (&self_load);
-    data_destroy (&self_load_load);
-    zsys_file_delete (test_state_file);
-    zsys_file_delete (test_state_file1);
-    zstr_free (&test_state_file);
-    zstr_free (&test_state_file1);
 }
 
 static void
@@ -3062,7 +2940,6 @@ data_test (bool verbose)
         */
     }
 
-    test4 (verbose);
     test5 (verbose);
     test6 (verbose);
     test7 (verbose);

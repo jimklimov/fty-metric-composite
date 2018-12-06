@@ -35,13 +35,11 @@
 static const char *AGENT_NAME = "fty-metric-composite-configurator";
 static const char *ENDPOINT = "ipc://@/malamute";
 static const char *DIRECTORY = "/var/lib/fty/fty-metric-composite";
-static const char *STATE_FILE = "/var/lib/fty/fty-metric-composite/configurator_state_file";
 
 void usage () {
     puts ("fty-metric-composite-configurator [options] ...\n"
           "  --verbose / -v         verbose logging mode\n"
           "  --output-dir / -s      directory, where configuration files would be created (directory MUST exist)\n"
-          "  --state-file / -s      TODO\n"
           "  --help / -h            this information\n"
           );
 }
@@ -61,7 +59,6 @@ int main (int argc, char *argv [])
 {
     int help = 0;
     bool verbose = false;
-    char *state_file = NULL;
     char *output_dir = NULL;
 
 // Some systems define struct option with non-"const" "char *"
@@ -74,7 +71,6 @@ int main (int argc, char *argv [])
     {
             {"help",            no_argument,        0,  1},
             {"verbose",         no_argument,        0,  'v'},
-            {"state-file",      required_argument,  0,  's'},
             {"output-dir",      required_argument,  0,  'o'},
             {0,                 0,                  0,  0}
     };
@@ -92,11 +88,6 @@ int main (int argc, char *argv [])
             case 'v':
             {
                 verbose = true;
-                break;
-            }
-            case 's':
-            {
-                state_file = optarg;
                 break;
             }
             case 'o':
@@ -121,24 +112,18 @@ int main (int argc, char *argv [])
     if (verbose)
         ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
-    // Set default state file on empty
-    if (!state_file) {
-        state_file = strdup (STATE_FILE);
-    }
+
     if (!output_dir) {
         output_dir = strdup (DIRECTORY);
     }
-    log_debug ("state file == '%s'", state_file ? state_file : "(null)");
     log_debug ("output_dir == '%s'", output_dir ? output_dir : "(null)");
 
     zactor_t *server = zactor_new (fty_metric_composite_configurator_server, (void *) AGENT_NAME);
     if (!server) {
         log_fatal ("zactor_new (task = 'fty_metric_composite_configurator_server', args = 'NULL') failed");
-        zstr_free (&state_file);
         zstr_free (&output_dir);
         return EXIT_FAILURE;
     }
-    zstr_sendx (server,  "STATE_FILE", state_file, NULL);
     zstr_sendx (server,  "CFG_DIRECTORY", output_dir, NULL);
     zstr_sendx (server,  "LOAD", NULL);
     zstr_sendx (server,  "CONNECT", ENDPOINT, NULL);
@@ -152,7 +137,6 @@ int main (int argc, char *argv [])
 
     zloop_destroy (&check_configuration_trigger);
 
-    zstr_free (&state_file);
     zstr_free (&output_dir);
     zactor_destroy (&server);
     return EXIT_SUCCESS;

@@ -37,7 +37,6 @@ struct _c_metric_conf_t {
     char *name;                     // server name
 //    data_t *asset_data;         // asset data
     mlm_client_t *client;           // malamute client
-    char *statefile_name;           // state file name
     char *configuration_dir;        // configuration directory
     bool is_propagation_needed;     // should sensors be propagated in topology?
 };
@@ -54,13 +53,8 @@ c_metric_conf_new (const char *name)
     if (self) {
         self->name = strdup (name);
         if (self->name)
-////            self->asset_data = data_new ();
-////        if (self->asset_data)
             self->client = mlm_client_new ();
-        if (self->client)
-            self->statefile_name = strdup ("");
-        if (self->statefile_name)
-            self->configuration_dir = strdup ("");
+        self->configuration_dir = strdup ("");
         if (self->configuration_dir) {
             self->verbose = false;
             self->is_propagation_needed = true;
@@ -84,7 +78,6 @@ c_metric_conf_destroy (c_metric_conf_t **self_p)
         zstr_free (&self->name);
 //        data_destroy (&self->asset_data);
         mlm_client_destroy (&self->client);
-        zstr_free (&self->statefile_name);
         zstr_free (&self->configuration_dir);
         // free structure itself
         free (self);
@@ -148,42 +141,6 @@ c_metric_conf_set_data (c_metric_conf_t *self, data_t **data_p)
     *data_p = NULL;
 }
 */
-
-//  --------------------------------------------------------------------------
-//  Get state file fullpath or empty string if not set
-
-const char *
-c_metric_conf_statefile (c_metric_conf_t *self)
-{
-    assert (self);
-    return self->statefile_name;
-}
-
-//  --------------------------------------------------------------------------
-//  Set state file fullpath
-//  0 - success, -1 - error
-
-int
-c_metric_conf_set_statefile (c_metric_conf_t *self, const char *fullpath)
-{
-    assert (self);
-    assert (fullpath);
-    zfile_t *file = zfile_new (NULL, fullpath);
-    if (!file) {
-        log_error ("zfile_new (NULL, '%s') failed.", fullpath);
-        return -1;
-    }
-    bool is_dir = zfile_is_directory (file);
-    if (is_dir) {
-        log_error ("Specified argument '%s' is a directory.", fullpath);
-        zfile_destroy (&file);
-        return -1;
-    }
-    zfile_destroy (&file);
-    zstr_free (&self->statefile_name);
-    self->statefile_name = strdup (fullpath);
-    return 0;
-}
 
 //  --------------------------------------------------------------------------
 //  Get propagation of sensors in topology
@@ -278,49 +235,7 @@ c_metric_conf_test (bool verbose)
 
     //  =================================================================
     if ( verbose )
-        log_debug ("Test2: statefile set/get test");
-
-    const char *state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, ""));
-    char *test_state_file = NULL;
-    char *test_state_dir = zsys_sprintf ("%s/test_dir", SELFTEST_DIR_RW);
-    assert (test_state_dir != NULL);
-
-    test_state_file = zsys_sprintf ("%s/state_file", SELFTEST_DIR_RW);
-    assert (test_state_file != NULL);
-    int rv = c_metric_conf_set_statefile (self, test_state_file);
-    assert (rv == 0);
-    state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, test_state_file));
-    zstr_free (&test_state_file);
-
-    test_state_file = (char *)"/tmp/composite-metrics/state_file";
-    rv = c_metric_conf_set_statefile (self, test_state_file);
-    assert (rv == 0);
-    state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, test_state_file));
-
-    // Make sure we can create a directory to hold the statefile, if asked to
-    zsys_dir_delete (test_state_dir);
-    test_state_file = zsys_sprintf ("%s/state_file", test_state_dir);
-    assert (test_state_file != NULL);
-    rv = c_metric_conf_set_statefile (self, test_state_file);
-    assert (rv == 0);
-    state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, test_state_file));
-    zsys_file_delete (test_state_file);
-    zsys_dir_delete (test_state_dir);
-
-    // directory (assumed to exist); state_file value should remain the same
-    rv = c_metric_conf_set_statefile (self, "/lib");
-    assert (rv == -1);
-    state_file = c_metric_conf_statefile (self);
-    assert (streq (state_file, test_state_file));
-    zstr_free (&test_state_file);
-
-    //  =================================================================
-    if ( verbose )
-        log_debug ("Test3: cfgdir set/get test");
+        log_debug ("Test2: cfgdir set/get test");
     {
     const char *cfgdir = c_metric_conf_cfgdir (self);
     assert (streq (cfgdir, ""));
@@ -343,8 +258,6 @@ c_metric_conf_test (bool verbose)
     } // if root
     } // scope
 
-    zsys_dir_delete (test_state_dir);
-    zstr_free (&test_state_dir);
 
     c_metric_conf_destroy (&self);
     //  @end

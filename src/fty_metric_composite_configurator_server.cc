@@ -404,7 +404,6 @@ fty_metric_composite_configurator_server (zsock_t *pipe, void* args)
                 if (data_is_reconfig_needed (data)) {
                     std::set <std::string> metrics_unavailable;
                     s_regenerate (cfg, data, metrics_unavailable);
-                    data_save (data, c_metric_conf_statefile (cfg));
                     for (const auto &one_metric: metrics_unavailable) {
                         proto_metric_unavailable_send (c_metric_conf_client (cfg), one_metric.c_str ());
                     }
@@ -430,7 +429,6 @@ fty_metric_composite_configurator_server (zsock_t *pipe, void* args)
                 // so, we need to regenerate configuration according new reality
                 std::set <std::string> metrics_unavailable;
                 s_regenerate (cfg, data, metrics_unavailable);
-                data_save (data, c_metric_conf_statefile (cfg));
                 for (const auto &one_metric: metrics_unavailable ) {
                     proto_metric_unavailable_send (c_metric_conf_client (cfg), one_metric.c_str ());
                 }
@@ -443,7 +441,6 @@ fty_metric_composite_configurator_server (zsock_t *pipe, void* args)
              if (data_is_reconfig_needed (data)) {
                 std::set <std::string> metrics_unavailable;
                 s_regenerate (cfg, data, metrics_unavailable);
-                data_save (data, c_metric_conf_statefile (cfg));
                 for (const auto &one_metric: metrics_unavailable) {
                     proto_metric_unavailable_send (c_metric_conf_client (cfg), one_metric.c_str ());
                 }
@@ -471,10 +468,7 @@ fty_metric_composite_configurator_server (zsock_t *pipe, void* args)
                         mlm_client_sender (c_metric_conf_client (cfg)), mlm_client_subject (c_metric_conf_client (cfg)));
                 continue;
             }
-            bool is_stored = data_asset_store (data, &proto);
-            if (is_stored) {
-                data_save (data, c_metric_conf_statefile (cfg));
-            }
+            data_asset_store (data, &proto);
             assert (proto == NULL);
         }
         else
@@ -492,7 +486,6 @@ fty_metric_composite_configurator_server (zsock_t *pipe, void* args)
         }
         zmsg_destroy (&message);
     }
-    data_save (data, c_metric_conf_statefile (cfg));
     zpoller_destroy (&poller);
     c_metric_conf_destroy (&cfg);
     data_destroy (&data);
