@@ -1,7 +1,7 @@
 /*  =========================================================================
     fty_metric_composite_configurator_server - Composite metrics server configurator
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 20187 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -582,8 +582,6 @@ fty_metric_composite_configurator_server_test (bool verbose)
     const char *SELFTEST_DIR_RW = "src/selftest-rw";
     assert (SELFTEST_DIR_RO);
     assert (SELFTEST_DIR_RW);
-    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
-    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
 
     char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
     assert (test_state_file != NULL);
@@ -1040,12 +1038,6 @@ fty_metric_composite_configurator_server_test (bool verbose)
             "Rack02-input-humidity.cfg",
             "Rack02-output-temperature.cfg",
             "Rack02-output-humidity.cfg"
-            // BIOS-2484: sensors assigned to non-racks are ignored
-//,
-//            "Curie.Row02-temperature.cfg",
-//            "Curie.Row02-humidity.cfg",
-//            "Curie-temperature.cfg",
-//            "Curie-humidity.cfg"
         };
 
         std::vector <std::string> expected_configs (expected_configs_orig);
@@ -1321,16 +1313,6 @@ fty_metric_composite_configurator_server_test (bool verbose)
             "Rack01-input-humidity.cfg",
             "Rack01-output-temperature.cfg",
             "Rack01-output-humidity.cfg"
-            // BIOS-2484: sensors assigned to non-racks are ignored
-//,
-//            "DC-Rozskoky-temperature.cfg",
-//            "DC-Rozskoky-humidity.cfg",
-//            "Lazer game-temperature.cfg",
-//            "Lazer game-humidity.cfg"
-//            "Curie.Row02-temperature.cfg",
-//            "Curie.Row02-humidity.cfg",
-//            "Curie-temperature.cfg",
-//            "Curie-humidity.cfg"
         };
 
         std::vector <std::string> expected_configs (expected_configs_orig);
@@ -1437,72 +1419,6 @@ fty_metric_composite_configurator_server_test (bool verbose)
     rv = mlm_client_send (producer, "Nobody here cares about this.", &zmessage);
     assert (rv == 0);
     zclock_sleep (50);
-/* BIOS-2484: sensors for NON racks are ignored -> this block is not relevant
-    log_trace ("TRACE ---===### (Test block -3-) ###===---\n");
-    {
-        log_debug ("Sleeping 1m for configurator kick in and finish\n");
-        zclock_sleep (60000);
-
-        std::vector <std::string> expected_configs = {
-            "Rack01-input-temperature.cfg",
-            "Rack01-input-humidity.cfg",
-            "Rack01-output-temperature.cfg",
-            "Rack01-output-humidity.cfg",
-            "DC-Rozskoky-temperature.cfg",
-            "DC-Rozskoky-humidity.cfg",
-            "Lazer game-temperature.cfg",
-            "Lazer game-humidity.cfg"
-        };
-
-        int rv = test_dir_contents (test_state_dir, expected_configs);
-        log_debug ("rv == %d\n", rv);
-        assert (rv == 0);
-
-        zlistx_t *expected_unavailable = zlistx_new ();
-        zlistx_set_duplicator (expected_unavailable, (czmq_duplicator *) strdup);
-        zlistx_set_destructor (expected_unavailable, (czmq_destructor *) zstr_free);
-        zlistx_set_comparator (expected_unavailable, (czmq_comparator *) strcmp);
-
-        zlistx_add_end (expected_unavailable, (void *) "average.temperature@Curie");
-        zlistx_add_end (expected_unavailable, (void *) "average.humidity@Curie");
-        zlistx_add_end (expected_unavailable, (void *) "average.temperature@Curie.Row02");
-        zlistx_add_end (expected_unavailable, (void *) "average.humidity@Curie.Row02");
-
-        while (zlistx_size (expected_unavailable) != 0) {
-            zmsg_t *message = mlm_client_recv (alert_generator);
-            assert (message);
-            assert (streq (mlm_client_subject (alert_generator), "metric_topic"));
-
-            char *part = zmsg_popstr (message);
-            assert (part);
-            assert (streq (part, "METRICUNAVAILABLE"));
-            zstr_free (&part);
-
-            part = zmsg_popstr (message);
-            assert (part);
-            log_debug ("Got metric unavailable topic '%s' ... ", part);
-            void *handle = zlistx_find (expected_unavailable, (void *) part);
-            assert (handle);
-            log_debug ("It's OK.\n");
-            zlistx_delete (expected_unavailable, handle);
-
-            zstr_free (&part);
-            zmsg_destroy (&message);
-        }
-
-        // Cleanup after the test bit
-        for (std::string &it : expected_configs) {
-            char *expected_filename = zsys_sprintf ("%s/%s", test_state_dir, it.c_str());
-            assert (expected_filename != NULL);
-            log_trace ("TRACE BLOCK-3 zsys_file_delete('%s')", expected_filename);
-            zsys_file_delete (expected_filename);
-            zstr_free (&expected_filename);
-        }
-
-        zlistx_destroy (&expected_unavailable);
-
-        log_info ("Test block -3- Ok\n");
-    }*/
 
     mlm_client_destroy (&producer);
     mlm_client_destroy (&alert_generator);

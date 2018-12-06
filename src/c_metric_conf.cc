@@ -2,7 +2,7 @@
     c_metric_conf - structure that represents current start of
             composite-metrics-configurator
 
-    Copyright (C) 2014 - 2016 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,43 +104,6 @@ c_metric_conf_client (c_metric_conf_t *self)
     assert (self);
     return self->client;
 }
-
-/*
-//  --------------------------------------------------------------------------
-//  Get data
-
-data_t *
-c_metric_conf_data (c_metric_conf_t *self)
-{
-    assert (self);
-    return self->asset_data;
-}
-
-//  --------------------------------------------------------------------------
-//  Get data and transfers ownership
-
-data_t *
-c_metric_conf_get_data (c_metric_conf_t *self)
-{
-    assert (self);
-    data_t *data = self->asset_data;
-    self->asset_data = NULL;
-    return data;
-}
-
-//  --------------------------------------------------------------------------
-//  Set data transfering ownership from caller
-
-void
-c_metric_conf_set_data (c_metric_conf_t *self, data_t **data_p)
-{
-    assert (self);
-    assert (data_p);
-    data_destroy (&self->asset_data);
-    self->asset_data = *data_p;
-    *data_p = NULL;
-}
-*/
 
 //  --------------------------------------------------------------------------
 //  Get propagation of sensors in topology

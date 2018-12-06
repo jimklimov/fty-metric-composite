@@ -1,7 +1,7 @@
 [Unit]
 Description=fty-metric-composite-configurator service
-Requires=malamute.service
-After=malamute.service
+Requires=malamute.service fty-asset.service
+After=malamute.service fty-asset.service
 PartOf=bios.target
 
 [Service]

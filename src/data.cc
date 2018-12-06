@@ -582,88 +582,6 @@ data_asset (data_t *self, const char *name)
 }
 
 //  --------------------------------------------------------------------------
-//  Save data to disk
-//  0 - success, -1 - error
-    //TODO clean it
-     /*
-int
-data_save (data_t *self, const char * filename)
-{
-
-    assert (self);
-    zconfig_t *root = zconfig_new ("nobody_cares", NULL);
-    if (!root) {
-        log_error ("root=zconfig_new() failed");
-        return -1;
-    }
-    zconfig_t *assets = zconfig_new ("assets", root);
-    if (!assets) {
-        log_error ("assets=zconfig_new() failed");
-        zconfig_destroy (&root);
-        return -1;
-    }
-    int i = 1;
-    for (fty_proto_t *bmsg = (fty_proto_t*) zhashx_first (self->all_assets);
-                       bmsg != NULL;
-                       bmsg = (fty_proto_t*) zhashx_next (self->all_assets))
-    {
-        zconfig_t *item = zconfig_new (std::to_string (i).c_str(), assets);
-        i++;
-        zconfig_put (item, "name", fty_proto_name (bmsg));
-        zconfig_put (item, "operation", fty_proto_operation (bmsg));
-
-        zhash_t *aux = fty_proto_aux (bmsg);
-        if ( aux ) {
-            for (const char *aux_value = (const char*) zhash_first (aux);
-                    aux_value != NULL;
-                    aux_value = (const char*) zhash_next (aux))
-            {
-                const char *aux_key = (const char*) zhash_cursor (aux);
-                char *item_key;
-                int r = asprintf (&item_key, "aux.%s", aux_key);
-                assert (r != -1);   // make gcc @ rhel happy
-                zconfig_put (item, item_key, aux_value);
-                zstr_free (&item_key);
-            }
-        }
-        zhash_t *ext = fty_proto_ext (bmsg);
-        if ( ext ) {
-            for (const char *value = (const char*) zhash_first (ext);
-                    value != NULL;
-                    value = (const char*) zhash_next (ext))
-            {
-                const char *key = (const char*) zhash_cursor (ext);
-                char *item_key;
-                int r = asprintf (&item_key, "ext.%s", key);
-                assert (r != -1);   // make gcc @ rhel happy
-                zconfig_put (item, item_key, value);
-                zstr_free (&item_key);
-            }
-        }
-    }
-    zconfig_t *metrics = zconfig_new ("produced_metrics", root);
-    int j = 1;
-    for ( const auto &metric_topic : self->produced_metrics ) {
-        zconfig_put (metrics, std::to_string (j).c_str(), metric_topic.c_str() );
-        j++;
-    }
-    if ( self->is_reconfig_needed ) {
-        zconfig_t *reconfig = zconfig_new ("is_reconfig_needed", root);
-        assert (reconfig); // make compiler happy!!
-    }
-    if (data_get_ipc (self)) {
-        zconfig_t *ipc_name = zconfig_new ("ipc_name", root);
-        zconfig_set_value (ipc_name, "%s", data_get_ipc (self));
-    }
-
-    int r = zconfig_save (root, filename);
-    zconfig_destroy (&root);
-    return r;
-     
-}
-*/ 
-
-//  --------------------------------------------------------------------------
 //  Load ASSETS from fty-asset
 //  data_t*- success or   NULL error
 
@@ -731,7 +649,7 @@ data_load (c_metric_conf_t *cfg)
         zmsg_addstr (msg, "GET");
         zmsg_addstr (msg, zuuid_str_canonical (uuid));
         zmsg_addstr (msg, asset);
-
+        log_debug ("requesting ASSET_DETAIL %s", asset);
         rv = mlm_client_sendto (c_metric_conf_client(cfg), AGENT_FTY_ASSET, "ASSET_DETAIL", NULL, 5000, &msg);
         if (rv != 0){
             log_error ("Request ASSET_DETAIL failed for %s",  asset);
@@ -739,7 +657,6 @@ data_load (c_metric_conf_t *cfg)
             return NULL;
         }
 
-        log_debug ("requesting ASSET_DETAIL %s", asset);
         zmsg_t *reply2 = mlm_client_recv (c_metric_conf_client(cfg));
         if (reply2)
         {
@@ -917,70 +834,6 @@ test_zlistx_compare (zlistx_t *expected, zlistx_t **received_p, bool verbose = f
     zlistx_destroy (received_p);
     *received_p = NULL;
     return rv;
-}
-
-//TODO clean old code
-static void
-data_compare (data_t *source, data_t *target, bool verbose) {
-
-    if ( source == NULL )
-        assert ( target == NULL );
-    else {
-        assert ( target != NULL );
-
-        log_debug ("data_get_ipc (source)=%s <%p>", data_get_ipc (source), (void*) data_get_ipc (source));
-        log_debug ("data_get_ipc (target)=%s <%p>", data_get_ipc (target), (void*) data_get_ipc (target));
-
-        if (data_get_ipc (source) != NULL) {
-            assert (data_get_ipc (target));
-            assert (streq (data_get_ipc (source), data_get_ipc (target)));
-        }
-        else    // XXX FIXME TODO: why is there "(null)" sometime
-            assert (data_get_ipc (target) == NULL);
-
-        // test all_assets
-        assert ( source-> all_assets != NULL ); // by design, it should be not NULL!
-        assert ( target-> all_assets != NULL ); // by design, it should be not NULL!
-        for ( fty_proto_t *source_asset = (fty_proto_t *) zhashx_first (source->all_assets);
-              source_asset != NULL;
-              source_asset = (fty_proto_t *) zhashx_next (source->all_assets)
-            )
-        {
-            void *handle = zhashx_lookup (target->all_assets, fty_proto_name (source_asset));
-            if ( handle == NULL ) {
-                log_debug ("asset='%s' is NOT in target, but expected", fty_proto_name (source_asset));
-                assert ( false );
-            }
-        }
-        for ( fty_proto_t *target_asset = (fty_proto_t *) zhashx_first (target->all_assets);
-              target_asset != NULL;
-              target_asset = (fty_proto_t *) zhashx_next (target->all_assets)
-            )
-        {
-            void *handle = zhashx_lookup (source->all_assets, fty_proto_name (target_asset));
-            if ( handle == NULL ) {
-                log_debug ("asset='%s' is in target, but NOT expected", fty_proto_name (target_asset));
-                assert ( false );
-            }
-        }
-        // test is_reconfig_needed
-        assert ( source->is_reconfig_needed == target->is_reconfig_needed );
-        // test last_configuration
-        assert ( zhashx_size (target->last_configuration) == 0 );
-        // test produced_metrics
-        for ( const auto &source_metric : source->produced_metrics) {
-            if ( target->produced_metrics.count (source_metric) != 1 ) {
-                log_debug ("produced_topic='%s' is NOT in target, but expected", source_metric.c_str());
-                assert ( false );
-            }
-        }
-        for ( const auto &target_metric : target->produced_metrics) {
-            if ( source->produced_metrics.count (target_metric) != 1 ) {
-                log_debug ("produced_topic='%s' is in target, but NOT expected", target_metric.c_str());
-                assert ( false );
-            }
-        }
-    }
 }
 
 static void

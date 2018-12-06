@@ -1,7 +1,7 @@
 /*  =========================================================================
     actor_commands - actor commands
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -240,8 +240,6 @@ actor_commands_test (bool verbose)
     assert (message == NULL);
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
-
-
     // --------------------------------------------------------------
     // CFG_DIRECTORY - expected fail
     message = zmsg_new ();
@@ -368,7 +366,6 @@ actor_commands_test (bool verbose)
     assert (rv == 0);
     assert (message == NULL);
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
-
 
     // CFG_DIRECTORY, expected writable (current builddir of course is, right?)
     message = zmsg_new ();
