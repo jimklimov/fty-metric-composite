@@ -33,6 +33,8 @@
 #include <set>
 #include <string>
 
+#include <fty_common_agents.h>
+
 //  Structure of our class
 struct _data_t {
     // Information about all interesting assets for this agent
@@ -662,12 +664,119 @@ data_save (data_t *self, const char * filename)
 */ 
 
 //  --------------------------------------------------------------------------
-//  Load data from disk
-//  0 - success, -1 - error
+//  Load ASSETS from fty-asset
+//  data_t*- success or   NULL error
 
 data_t *
-data_load (const char *filename)
+data_load (c_metric_conf_t *cfg)
 {
+    data_t *data = data_new ();
+    if (!data) {
+        return NULL;
+    }
+    log_debug ("Request assets list");
+
+    zmsg_t *msg = zmsg_new ();
+    zuuid_t *uuid = zuuid_new ();
+    zmsg_addstr (msg, "GET");
+    zmsg_addstr (msg, zuuid_str_canonical (uuid));
+    zmsg_addstr (msg, "rackcontroller");
+    zmsg_addstr (msg, "datacenter");
+    zmsg_addstr (msg, "room");
+    zmsg_addstr (msg, "row");
+    zmsg_addstr (msg, "rack");
+    zmsg_addstr (msg, "ups");
+    zmsg_addstr (msg, "epdu");
+    zmsg_addstr (msg, "sensor");
+
+    int rv = mlm_client_sendto (c_metric_conf_client(cfg), AGENT_FTY_ASSET, "ASSETS", NULL, 5000, &msg);
+    if (rv != 0){
+        log_error ("Request assets list failed");
+        data_destroy(&data);
+        return NULL;
+    }else
+        log_debug ("Assets list request sent successfully");
+
+    zmsg_t *reply = mlm_client_recv (c_metric_conf_client(cfg));
+    if (!reply){
+        log_error ("%s: no reply message received");
+        data_destroy(&data);
+        return NULL;
+    }
+    char *uuid_recv = zmsg_popstr(reply);
+    if (strcmp (zuuid_str_canonical (uuid), uuid_recv) !=  0) {
+        log_error ("correlation id doesn't match");
+        zmsg_destroy (&reply);
+        zstr_free (&uuid_recv);
+        data_destroy(&data);
+        return NULL;
+    }
+    zstr_free (&uuid_recv);
+    char *ok_ko = zmsg_popstr (reply);
+    if (streq (ok_ko, "ERROR"))
+    {
+        char *reason = zmsg_popstr (reply);
+        log_error ("error message received %s", reason);
+        zmsg_destroy (&reply);
+        zstr_free (&ok_ko);
+        data_destroy(&data);
+        return NULL;
+    }
+
+    char *asset = zmsg_popstr(reply);
+    while (asset)
+    {
+        uuid = zuuid_new ();
+        msg = zmsg_new ();
+        zmsg_addstr (msg, "GET");
+        zmsg_addstr (msg, zuuid_str_canonical (uuid));
+        zmsg_addstr (msg, asset);
+
+        rv = mlm_client_sendto (c_metric_conf_client(cfg), AGENT_FTY_ASSET, "ASSET_DETAIL", NULL, 5000, &msg);
+        if (rv != 0){
+            log_error ("Request ASSET_DETAIL failed for %s",  asset);
+            data_destroy(&data);
+            return NULL;
+        }
+
+        log_debug ("requesting ASSET_DETAIL %s", asset);
+        zmsg_t *reply2 = mlm_client_recv (c_metric_conf_client(cfg));
+        if (reply2)
+        {
+            char *uuid_recv = zmsg_popstr (reply2);
+            if (strcmp (zuuid_str_canonical (uuid), uuid_recv) !=  0) {
+                log_error ("correlation id doesn't match ASSET_DETAIL");
+                zmsg_destroy (&reply2);
+                data_destroy(&data);
+                return NULL;
+            }
+
+            if (fty_proto_is (reply2))
+            {
+                fty_proto_t *fmessage = fty_proto_decode (&reply2);
+                if (fty_proto_id (fmessage) == FTY_PROTO_ASSET)
+                {
+                    log_debug ("Processing %s",  asset);
+                    data_asset_store(data,&fmessage);
+                }else{
+                    log_warning ("error1 received on ASSET_DETAIL %s ignore it", asset);
+                    fty_proto_destroy (&fmessage);
+                }
+            }
+            else
+            {
+                log_warning ("error2 received on ASSET_DETAIL %s ignore it", asset);
+            }
+            zmsg_destroy (&reply2);
+            asset = zmsg_popstr (reply);
+            
+        }
+        zmsg_destroy (&msg);
+
+    } // while
+    zmsg_destroy (&reply);
+    return data;
+    
     //TODO do it from fty-asset request
     /*
     if ( !filename )
@@ -810,6 +919,7 @@ test_zlistx_compare (zlistx_t *expected, zlistx_t **received_p, bool verbose = f
     return rv;
 }
 
+//TODO clean old code
 static void
 data_compare (data_t *source, data_t *target, bool verbose) {
 

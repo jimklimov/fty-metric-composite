@@ -142,27 +142,17 @@ actor_commands (
     }
     else
     if (streq (cmd, "LOAD")) {
-        //TODO, request fty-asset to get asset list
-        /*
-        if (streq (c_metric_conf_statefile (cfg), "")) {
-            log_error (
-                    "State file: '' not loaded (name of statefile is not specified yet).");
-            zstr_free (&cmd);
-            zmsg_destroy (message_p);
-            return 0;
-        }
-        data_t *new_data = data_load (c_metric_conf_statefile (cfg));
+        data_t *new_data = data_load (cfg);
         if (new_data == NULL) {
-            log_error (
-                    "State file: '%s' not loaded (error during load).", c_metric_conf_statefile (cfg));
+            log_fatal ("LOAD ASSETS failed");
             zstr_free (&cmd);
             zmsg_destroy (message_p);
-            return 0;
+            raise(SIGTERM);
         }
         data_destroy (data_p);
         *data_p = new_data;
-        log_info ("State file: '%s' loaded successfully", c_metric_conf_statefile (cfg));
-        */
+        log_info ("ASSETS loaded successfully for IPM id=%s",
+                (data_get_ipc(new_data)==NULL?"(NULL)":data_get_ipc(new_data)));
     }
     else
     if (streq (cmd, "CFG_DIRECTORY")) {

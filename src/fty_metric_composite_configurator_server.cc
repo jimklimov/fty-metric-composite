@@ -1028,8 +1028,8 @@ fty_metric_composite_configurator_server_test (bool verbose)
     log_debug ("TRACE ---===### (Test block -1-) ###===---\n");
     {
         uint64_t retry = 20000;
-        log_debug ("Sleeping 1m for configurator kick in and finish\n");
-        zclock_sleep (60000); // magical constant
+        log_debug ("Sleeping 30s for configurator kick in and finish\n");
+        zclock_sleep (30000); // magical constant
 
         std::vector <std::string> expected_configs_orig = {
             "Rack01-input-temperature.cfg",
@@ -1313,8 +1313,8 @@ fty_metric_composite_configurator_server_test (bool verbose)
     log_debug ("TRACE ---===### (Test block -2-) ###===---\n");
     {
         uint64_t retry = 20000;
-        log_debug ("Sleeping 1m for configurator kick in and finish\n");
-        zclock_sleep (60000);
+        log_debug ("Sleeping 30s for configurator kick in and finish\n");
+        zclock_sleep (30000);
 
         std::vector <std::string> expected_configs_orig = {
             "Rack01-input-temperature.cfg",

@@ -91,10 +91,10 @@ FTY_METRIC_COMPOSITE_EXPORT zlistx_t *
 FTY_METRIC_COMPOSITE_EXPORT fty_proto_t *
     data_asset (data_t *self, const char *name);
 
-//  Load nut from disk
-//  0 - success, -1 - error
+//  Load ASSETS from fty-asset
+//  data_t*- success or   NULL error
 FTY_METRIC_COMPOSITE_EXPORT data_t *
-    data_load (const char *filename);
+    data_load (c_metric_conf_t *cfg);
 
 //  Destroy the data
 FTY_METRIC_COMPOSITE_EXPORT void
