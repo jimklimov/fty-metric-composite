@@ -54,7 +54,8 @@ c_metric_conf_new (const char *name)
         self->name = strdup (name);
         if (self->name)
             self->client = mlm_client_new ();
-        self->configuration_dir = strdup ("");
+        if ( self->client)
+            self->configuration_dir = strdup ("");
         if (self->configuration_dir) {
             self->verbose = false;
             self->is_propagation_needed = true;
