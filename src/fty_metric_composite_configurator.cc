@@ -1,7 +1,7 @@
 /*  =========================================================================
     fty_metric_composite_configurator - Metrics calculator configurator
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ static const char *DIRECTORY = "/var/lib/fty/fty-metric-composite";
 void usage () {
     puts ("fty-metric-composite-configurator [options] ...\n"
           "  --verbose / -v         verbose logging mode\n"
-          "  --output-dir / -s      directory, where configuration files would be created (directory MUST exist)\n"
+          "  --output-dir / -o      directory, where configuration files would be created (directory MUST exist)\n"
           "  --help / -h            this information\n"
           );
 }
@@ -125,8 +125,8 @@ int main (int argc, char *argv [])
         return EXIT_FAILURE;
     }
     zstr_sendx (server,  "CFG_DIRECTORY", output_dir, NULL);
-    zstr_sendx (server,  "LOAD", NULL);
     zstr_sendx (server,  "CONNECT", ENDPOINT, NULL);
+    zstr_sendx (server,  "LOAD", NULL);
     zstr_sendx (server,  "PRODUCER", "_METRICS_UNAVAILABLE", NULL);
     zstr_sendx (server,  "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
 
