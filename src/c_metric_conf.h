@@ -56,15 +56,6 @@ FTY_METRIC_COMPOSITE_EXPORT void
 FTY_METRIC_COMPOSITE_EXPORT mlm_client_t *
     c_metric_conf_client (c_metric_conf_t *self);
 
-//  Get state file fullpath or empty string if not set
-FTY_METRIC_COMPOSITE_EXPORT const char *
-    c_metric_conf_statefile (c_metric_conf_t *self);
-
-//  Set state file fullpath
-//  0 - success, -1 - error
-FTY_METRIC_COMPOSITE_EXPORT int
-    c_metric_conf_set_statefile (c_metric_conf_t *self, const char *fullpath);
-
 //  Get propagation of sensors in topology
 FTY_METRIC_COMPOSITE_EXPORT bool
     c_metric_conf_propagation (c_metric_conf_t *self);
