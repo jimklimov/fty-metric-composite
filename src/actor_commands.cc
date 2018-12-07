@@ -147,7 +147,8 @@ actor_commands (
             log_fatal ("LOAD ASSETS failed");
             zstr_free (&cmd);
             zmsg_destroy (message_p);
-            raise(SIGTERM);
+            //abort now 
+            raise(SIGABRT);
         }
         data_destroy (data_p);
         *data_p = new_data;
