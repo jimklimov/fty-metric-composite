@@ -54,12 +54,13 @@ BuildRequires:  gcc-c++
 BuildRequires:  lua-devel
 BuildRequires:  log4cplus-devel
 BuildRequires:  fty-common-logging-devel
-BuildRequires:  fty-common-devel
 BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
-BuildRequires:  malamute-devel
 BuildRequires:  cxxtools-devel
+BuildRequires:  malamute-devel
+BuildRequires:  openssl-devel
+BuildRequires:  fty-common-devel
 BuildRequires:  fty-common-mlm-devel
 BuildRequires:  fty-proto-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -89,12 +90,13 @@ Requires:       libfty_metric_composite0 = %{version}
 Requires:       lua-devel
 Requires:       log4cplus-devel
 Requires:       fty-common-logging-devel
-Requires:       fty-common-devel
 Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
-Requires:       malamute-devel
 Requires:       cxxtools-devel
+Requires:       malamute-devel
+Requires:       openssl-devel
+Requires:       fty-common-devel
 Requires:       fty-common-mlm-devel
 Requires:       fty-proto-devel
 
