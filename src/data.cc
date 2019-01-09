@@ -33,6 +33,8 @@
 #include <set>
 #include <string>
 
+#include <fty_common_agents.h>
+
 //  Structure of our class
 struct _data_t {
     // Information about all interesting assets for this agent
@@ -580,90 +582,120 @@ data_asset (data_t *self, const char *name)
 }
 
 //  --------------------------------------------------------------------------
-//  Save data to disk
-//  0 - success, -1 - error
-
-int
-data_save (data_t *self, const char * filename)
-{
-    assert (self);
-    zconfig_t *root = zconfig_new ("nobody_cares", NULL);
-    if (!root) {
-        log_error ("root=zconfig_new() failed");
-        return -1;
-    }
-    zconfig_t *assets = zconfig_new ("assets", root);
-    if (!assets) {
-        log_error ("assets=zconfig_new() failed");
-        zconfig_destroy (&root);
-        return -1;
-    }
-    int i = 1;
-    for (fty_proto_t *bmsg = (fty_proto_t*) zhashx_first (self->all_assets);
-                       bmsg != NULL;
-                       bmsg = (fty_proto_t*) zhashx_next (self->all_assets))
-    {
-        zconfig_t *item = zconfig_new (std::to_string (i).c_str(), assets);
-        i++;
-        zconfig_put (item, "name", fty_proto_name (bmsg));
-        zconfig_put (item, "operation", fty_proto_operation (bmsg));
-
-        zhash_t *aux = fty_proto_aux (bmsg);
-        if ( aux ) {
-            for (const char *aux_value = (const char*) zhash_first (aux);
-                    aux_value != NULL;
-                    aux_value = (const char*) zhash_next (aux))
-            {
-                const char *aux_key = (const char*) zhash_cursor (aux);
-                char *item_key;
-                int r = asprintf (&item_key, "aux.%s", aux_key);
-                assert (r != -1);   // make gcc @ rhel happy
-                zconfig_put (item, item_key, aux_value);
-                zstr_free (&item_key);
-            }
-        }
-        zhash_t *ext = fty_proto_ext (bmsg);
-        if ( ext ) {
-            for (const char *value = (const char*) zhash_first (ext);
-                    value != NULL;
-                    value = (const char*) zhash_next (ext))
-            {
-                const char *key = (const char*) zhash_cursor (ext);
-                char *item_key;
-                int r = asprintf (&item_key, "ext.%s", key);
-                assert (r != -1);   // make gcc @ rhel happy
-                zconfig_put (item, item_key, value);
-                zstr_free (&item_key);
-            }
-        }
-    }
-    zconfig_t *metrics = zconfig_new ("produced_metrics", root);
-    int j = 1;
-    for ( const auto &metric_topic : self->produced_metrics ) {
-        zconfig_put (metrics, std::to_string (j).c_str(), metric_topic.c_str() );
-        j++;
-    }
-    if ( self->is_reconfig_needed ) {
-        zconfig_t *reconfig = zconfig_new ("is_reconfig_needed", root);
-        assert (reconfig); // make compiler happy!!
-    }
-    if (data_get_ipc (self)) {
-        zconfig_t *ipc_name = zconfig_new ("ipc_name", root);
-        zconfig_set_value (ipc_name, "%s", data_get_ipc (self));
-    }
-
-    int r = zconfig_save (root, filename);
-    zconfig_destroy (&root);
-    return r;
-}
-
-//  --------------------------------------------------------------------------
-//  Load data from disk
-//  0 - success, -1 - error
+//  Load ASSETS from fty-asset
+//  data_t*- success or   NULL error
 
 data_t *
-data_load (const char *filename)
+data_load (c_metric_conf_t *cfg)
 {
+    data_t *data = data_new ();
+    if (!data) {
+        return NULL;
+    }
+    log_debug ("Request assets list");
+
+    zmsg_t *msg = zmsg_new ();
+    zuuid_t *uuid = zuuid_new ();
+    zmsg_addstr (msg, "GET");
+    zmsg_addstr (msg, zuuid_str_canonical (uuid));
+    zmsg_addstr (msg, "rackcontroller");
+    zmsg_addstr (msg, "datacenter");
+    zmsg_addstr (msg, "room");
+    zmsg_addstr (msg, "row");
+    zmsg_addstr (msg, "rack");
+    zmsg_addstr (msg, "ups");
+    zmsg_addstr (msg, "epdu");
+    zmsg_addstr (msg, "sensor");
+
+    int rv = mlm_client_sendto (c_metric_conf_client(cfg), AGENT_FTY_ASSET, "ASSETS", NULL, 5000, &msg);
+    if (rv != 0){
+        log_error ("Request assets list failed");
+        data_destroy(&data);
+        return NULL;
+    }else
+        log_debug ("Assets list request sent successfully");
+
+    zmsg_t *reply = mlm_client_recv (c_metric_conf_client(cfg));
+    if (!reply){
+        log_error ("%s: no reply message received");
+        data_destroy(&data);
+        return NULL;
+    }
+    char *uuid_recv = zmsg_popstr(reply);
+    if (strcmp (zuuid_str_canonical (uuid), uuid_recv) !=  0) {
+        log_error ("correlation id doesn't match");
+        zmsg_destroy (&reply);
+        zstr_free (&uuid_recv);
+        data_destroy(&data);
+        return NULL;
+    }
+    zstr_free (&uuid_recv);
+    char *ok_ko = zmsg_popstr (reply);
+    if (streq (ok_ko, "ERROR"))
+    {
+        char *reason = zmsg_popstr (reply);
+        log_error ("error message received %s", reason);
+        zmsg_destroy (&reply);
+        zstr_free (&ok_ko);
+        data_destroy(&data);
+        return NULL;
+    }
+
+    char *asset = zmsg_popstr(reply);
+    while (asset)
+    {
+        uuid = zuuid_new ();
+        msg = zmsg_new ();
+        zmsg_addstr (msg, "GET");
+        zmsg_addstr (msg, zuuid_str_canonical (uuid));
+        zmsg_addstr (msg, asset);
+        log_debug ("requesting ASSET_DETAIL %s", asset);
+        rv = mlm_client_sendto (c_metric_conf_client(cfg), AGENT_FTY_ASSET, "ASSET_DETAIL", NULL, 5000, &msg);
+        if (rv != 0){
+            log_error ("Request ASSET_DETAIL failed for %s",  asset);
+            data_destroy(&data);
+            return NULL;
+        }
+
+        zmsg_t *reply2 = mlm_client_recv (c_metric_conf_client(cfg));
+        if (reply2)
+        {
+            char *uuid_recv = zmsg_popstr (reply2);
+            if (strcmp (zuuid_str_canonical (uuid), uuid_recv) !=  0) {
+                log_error ("correlation id doesn't match ASSET_DETAIL");
+                zmsg_destroy (&reply2);
+                data_destroy(&data);
+                return NULL;
+            }
+
+            if (fty_proto_is (reply2))
+            {
+                fty_proto_t *fmessage = fty_proto_decode (&reply2);
+                if (fty_proto_id (fmessage) == FTY_PROTO_ASSET)
+                {
+                    log_debug ("Processing %s",  asset);
+                    data_asset_store(data,&fmessage);
+                }else{
+                    log_warning ("error1 received on ASSET_DETAIL %s ignore it", asset);
+                    fty_proto_destroy (&fmessage);
+                }
+            }
+            else
+            {
+                log_warning ("error2 received on ASSET_DETAIL %s ignore it", asset);
+            }
+            zmsg_destroy (&reply2);
+            asset = zmsg_popstr (reply);
+            
+        }
+        zmsg_destroy (&msg);
+
+    } // while
+    zmsg_destroy (&reply);
+    return data;
+    
+    //TODO do it from fty-asset request
+    /*
     if ( !filename )
         return NULL;
 
@@ -723,6 +755,7 @@ data_load (const char *filename)
     }
     zconfig_destroy (&root);
     return self;
+     */ 
 }
 
 //  --------------------------------------------------------------------------
@@ -801,198 +834,6 @@ test_zlistx_compare (zlistx_t *expected, zlistx_t **received_p, bool verbose = f
     zlistx_destroy (received_p);
     *received_p = NULL;
     return rv;
-}
-
-static void
-data_compare (data_t *source, data_t *target, bool verbose) {
-
-    if ( source == NULL )
-        assert ( target == NULL );
-    else {
-        assert ( target != NULL );
-
-        log_debug ("data_get_ipc (source)=%s <%p>", data_get_ipc (source), (void*) data_get_ipc (source));
-        log_debug ("data_get_ipc (target)=%s <%p>", data_get_ipc (target), (void*) data_get_ipc (target));
-
-        if (data_get_ipc (source) != NULL) {
-            assert (data_get_ipc (target));
-            assert (streq (data_get_ipc (source), data_get_ipc (target)));
-        }
-        else    // XXX FIXME TODO: why is there "(null)" sometime
-            assert (data_get_ipc (target) == NULL);
-
-        // test all_assets
-        assert ( source-> all_assets != NULL ); // by design, it should be not NULL!
-        assert ( target-> all_assets != NULL ); // by design, it should be not NULL!
-        for ( fty_proto_t *source_asset = (fty_proto_t *) zhashx_first (source->all_assets);
-              source_asset != NULL;
-              source_asset = (fty_proto_t *) zhashx_next (source->all_assets)
-            )
-        {
-            void *handle = zhashx_lookup (target->all_assets, fty_proto_name (source_asset));
-            if ( handle == NULL ) {
-                log_debug ("asset='%s' is NOT in target, but expected", fty_proto_name (source_asset));
-                assert ( false );
-            }
-        }
-        for ( fty_proto_t *target_asset = (fty_proto_t *) zhashx_first (target->all_assets);
-              target_asset != NULL;
-              target_asset = (fty_proto_t *) zhashx_next (target->all_assets)
-            )
-        {
-            void *handle = zhashx_lookup (source->all_assets, fty_proto_name (target_asset));
-            if ( handle == NULL ) {
-                log_debug ("asset='%s' is in target, but NOT expected", fty_proto_name (target_asset));
-                assert ( false );
-            }
-        }
-        // test is_reconfig_needed
-        assert ( source->is_reconfig_needed == target->is_reconfig_needed );
-        // test last_configuration
-        assert ( zhashx_size (target->last_configuration) == 0 );
-        // test produced_metrics
-        for ( const auto &source_metric : source->produced_metrics) {
-            if ( target->produced_metrics.count (source_metric) != 1 ) {
-                log_debug ("produced_topic='%s' is NOT in target, but expected", source_metric.c_str());
-                assert ( false );
-            }
-        }
-        for ( const auto &target_metric : target->produced_metrics) {
-            if ( source->produced_metrics.count (target_metric) != 1 ) {
-                log_debug ("produced_topic='%s' is in target, but NOT expected", target_metric.c_str());
-                assert ( false );
-            }
-        }
-    }
-}
-
-static void
-test4 (bool verbose)
-{
-    log_debug ("Test4: save/load test");
-
-    // Note: If your selftest reads SCMed fixture data, please keep it in
-    // src/selftest-ro; if your test creates filesystem objects, please
-    // do so under src/selftest-rw. They are defined below along with a
-    // usecase (asert) to make compilers happy.
-    const char *SELFTEST_DIR_RO = "src/selftest-ro";
-    const char *SELFTEST_DIR_RW = "src/selftest-rw";
-    assert (SELFTEST_DIR_RO);
-    assert (SELFTEST_DIR_RW);
-    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
-    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
-
-    char *test_state_file = zsys_sprintf ("%s/state_file_test4", SELFTEST_DIR_RW);
-    assert (test_state_file != NULL);
-    char *test_state_file1 = zsys_sprintf ("%s/state_file_test4-1", SELFTEST_DIR_RW);
-    assert (test_state_file1 != NULL);
-
-    data_t *self = NULL;
-    data_t *self_load = NULL;
-    fty_proto_t *asset = NULL;
-
-    // just ipc_name
-    self = data_new ();
-    data_set_ipc (self, "IPC");
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // one asset without AUX without EXT
-    asset = test_asset_new ("some_asset", FTY_PROTO_ASSET_OP_CREATE);
-    self = data_new ();
-    data_asset_store (self, &asset);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // one asset without EXT
-    asset = test_asset_new ("some_asset_without_ext", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_aux_insert (asset, "type", "%s", "datacenter");
-    fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
-    self = data_new ();
-
-    data_asset_store (self, &asset);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // one asset without AUX
-    asset = test_asset_new ("some_asset_without_aux", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_ext_insert (asset, "type", "%s", "datacenter");
-    fty_proto_ext_insert (asset, "subtype", "%s", "unknown");
-    self = data_new ();
-
-    data_asset_store (self, &asset);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-    data_destroy (&self);
-    data_destroy (&self_load);
-
-    // three assets + reassign + metrics
-    self = data_new ();
-
-    asset = test_asset_new ("TEST4_DC", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_ext_insert (asset, "type", "%s", "datacenter");
-    fty_proto_ext_insert (asset, "subtype", "%s", "unknown");
-    data_asset_store (self, &asset);
-
-    asset = test_asset_new ("TEST4_RACK", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST4_DC");
-    fty_proto_aux_insert (asset, "type", "%s", "rack");
-    fty_proto_aux_insert (asset, "subtype", "%s", "unknown");
-    data_asset_store (self, &asset);
-
-    asset = test_asset_new ("TEST4_SENSOR", FTY_PROTO_ASSET_OP_CREATE);
-    fty_proto_aux_insert (asset, "parent_name.1", "%s", "TEST4_UPS");
-    fty_proto_aux_insert (asset, "type", "%s", "device");
-    fty_proto_aux_insert (asset, "subtype", "%s", "sensor");
-    fty_proto_ext_insert (asset, "port", "%s", "TH2");
-    fty_proto_ext_insert (asset, "calibration_offset_t", "%s", "2");
-    fty_proto_ext_insert (asset, "calibration_offset_h", "%s", "20");
-    fty_proto_ext_insert (asset, "sensor_function", "%s", "input");
-    fty_proto_ext_insert (asset, "logical_asset", "%s", "TEST4_RACK");
-    data_asset_store (self, &asset);
-
-    data_reassign_sensors (self, true);
-    std::set <std::string> metrics {"topic1", "topic2"};
-    data_set_produced_metrics (self, metrics);
-
-    data_save (self, test_state_file);
-
-    self_load = data_load (test_state_file);
-
-    data_compare (self, self_load, verbose);
-
-    data_save (self_load, test_state_file1);
-    data_t *self_load_load = data_load (test_state_file1);
-    data_compare (self, self_load_load, verbose);
-
-    data_destroy (&self);
-    data_destroy (&self_load);
-    data_destroy (&self_load_load);
-    zsys_file_delete (test_state_file);
-    zsys_file_delete (test_state_file1);
-    zstr_free (&test_state_file);
-    zstr_free (&test_state_file1);
 }
 
 static void
@@ -3062,7 +2903,6 @@ data_test (bool verbose)
         */
     }
 
-    test4 (verbose);
     test5 (verbose);
     test6 (verbose);
     test7 (verbose);

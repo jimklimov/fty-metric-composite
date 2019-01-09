@@ -1,7 +1,7 @@
 /*  =========================================================================
     actor_commands - actor commands
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,19 +123,6 @@ actor_commands (
         zstr_free (&stream);
     }
     else
-    if (streq (cmd, "STATE_FILE")) {
-        char *state_file = zmsg_popstr (message);
-        if (!state_file) {
-            log_error (
-                    "Expected multipart string format: STATE_FILE/state_file."
-                    "Received STATE_FILE/nullptr");
-            zstr_free (&cmd);
-            zmsg_destroy (message_p);
-            return 0;
-        }
-        c_metric_conf_set_statefile (cfg, state_file);
-        zstr_free (&state_file);
-    } else
     if (streq (cmd, "IS_PROPAGATION_NEEDED")) {
         char *answer = zmsg_popstr (message);
         if (!answer) {
@@ -155,24 +142,18 @@ actor_commands (
     }
     else
     if (streq (cmd, "LOAD")) {
-        if (streq (c_metric_conf_statefile (cfg), "")) {
-            log_error (
-                    "State file: '' not loaded (name of statefile is not specified yet).");
-            zstr_free (&cmd);
-            zmsg_destroy (message_p);
-            return 0;
-        }
-        data_t *new_data = data_load (c_metric_conf_statefile (cfg));
+        data_t *new_data = data_load (cfg);
         if (new_data == NULL) {
-            log_error (
-                    "State file: '%s' not loaded (error during load).", c_metric_conf_statefile (cfg));
+            log_fatal ("LOAD ASSETS failed");
             zstr_free (&cmd);
             zmsg_destroy (message_p);
-            return 0;
+            //abort now 
+            raise(SIGABRT);
         }
         data_destroy (data_p);
         *data_p = new_data;
-        log_info ("State file: '%s' loaded successfully", c_metric_conf_statefile (cfg));
+        log_info ("ASSETS loaded successfully for IPM id=%s",
+                (data_get_ipc(new_data)==NULL?"(NULL)":data_get_ipc(new_data)));
     }
     else
     if (streq (cmd, "CFG_DIRECTORY")) {
@@ -218,9 +199,6 @@ actor_commands_test (bool verbose)
     // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
     // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
 
-    char *test_state_file = zsys_sprintf ("%s/test_state_file", SELFTEST_DIR_RW);
-    assert (test_state_file != NULL);
-
     //  @selftest
     static const char* endpoint = "ipc://bios-actor-commands-test";
     // malamute broker
@@ -242,7 +220,6 @@ actor_commands_test (bool verbose)
     assert (rv == 0);
     assert (message == NULL);
 
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
     // --------------------------------------------------------------
     // empty string - expected fail
@@ -252,7 +229,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // --------------------------------------------------------------
@@ -263,31 +239,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
-    assert (streq (c_metric_conf_cfgdir (cfg), ""));
-
-    // --------------------------------------------------------------
-    // STATE_FILE - expected fail
-    message = zmsg_new ();
-    assert (message);
-    zmsg_addstr (message, "STATE_FILE");
-    // missing config_file here
-    rv = actor_commands (cfg, &data, &message);
-    assert (rv == 0);
-    assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
-    assert (streq (c_metric_conf_cfgdir (cfg), ""));
-
-    // --------------------------------------------------------------
-    // STATE_FILE - expected fail
-    message = zmsg_new ();
-    assert (message);
-    zmsg_addstr (message, "STATE_FILE");
-    zmsg_addstr (message, "."); // supplied path is a directory
-    rv = actor_commands (cfg, &data, &message);
-    assert (rv == 0);
-    assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // --------------------------------------------------------------
@@ -299,7 +250,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // --------------------------------------------------------------
@@ -311,7 +261,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // --------------------------------------------------------------
@@ -323,7 +272,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // --------------------------------------------------------------
@@ -387,7 +335,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 1);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // CONNECT
@@ -398,7 +345,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // CONSUMER
@@ -410,7 +356,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // PRODUCER
@@ -421,18 +366,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), ""));
-    assert (streq (c_metric_conf_cfgdir (cfg), ""));
-
-    // STATE_FILE
-    message = zmsg_new ();
-    assert (message);
-    zmsg_addstr (message, "STATE_FILE");
-    zmsg_addstr (message, test_state_file);
-    rv = actor_commands (cfg, &data, &message);
-    assert (rv == 0);
-    assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), ""));
 
     // CFG_DIRECTORY, expected writable (current builddir of course is, right?)
@@ -443,7 +376,6 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), "./"));
 
     // CFG_DIRECTORY, expected writable
@@ -457,14 +389,11 @@ actor_commands_test (bool verbose)
     rv = actor_commands (cfg, &data, &message);
     assert (rv == 0);
     assert (message == NULL);
-    assert (streq (c_metric_conf_statefile (cfg), test_state_file));
     assert (streq (c_metric_conf_cfgdir (cfg), SELFTEST_DIR_RW));
 
     zmsg_destroy (&message);
     c_metric_conf_destroy (&cfg);
     data_destroy (&data);
-    zsys_file_delete (test_state_file);
-    zstr_free (&test_state_file);
     zactor_destroy (&malamute);
     //  @end
     log_info ("actor-commands-test OK\n");
