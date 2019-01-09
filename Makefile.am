@@ -23,10 +23,11 @@ AM_CPPFLAGS = \
     ${cxxtools_CFLAGS} \
     ${fty_common_mlm_CFLAGS} \
     ${fty_proto_CFLAGS} \
+    ${fty_shm_CFLAGS} \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${lua_5_1_LIBS} ${log4cplus_LIBS} ${fty_common_logging_LIBS} ${fty_common_LIBS} ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${cxxtools_LIBS} ${fty_common_mlm_LIBS} ${fty_proto_LIBS}
+project_libs = ${lua_5_1_LIBS} ${log4cplus_LIBS} ${fty_common_logging_LIBS} ${fty_common_LIBS} ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${cxxtools_LIBS} ${fty_common_mlm_LIBS} ${fty_proto_LIBS} ${fty_shm_LIBS}
 
 SUBDIRS = doc
 SUBDIRS += include
@@ -58,6 +59,7 @@ EXTRA_DIST += \
     Findcxxtools.cmake \
     Findfty_common_mlm.cmake \
     Findfty_proto.cmake \
+    Findfty_shm.cmake \
     builds/cmake/Modules/ClangFormat.cmake \
     builds/cmake/clang-format-check.sh.in \
     builds/cmake/Config.cmake.in \

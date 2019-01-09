@@ -227,6 +227,7 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
             fty_proto_set_unit(n_met,  "%s", lua_tostring(L, -1));
             fty_proto_set_ttl(n_met,  TTL);
             fty_proto_set_time(n_met, std::time (NULL));
+            fty::shm::write_metric(n_met);
             zmsg_t* z_met = fty_proto_encode(&n_met);
             int rv = mlm_client_send(client, lua_tostring(L, -3), &z_met);
             if (rv != 0) {
@@ -265,6 +266,7 @@ fty_metric_composite_server_test (bool verbose)
     const char *SELFTEST_DIR_RW = "src/selftest-rw";
     assert (SELFTEST_DIR_RO);
     assert (SELFTEST_DIR_RW);
+    fty_shm_set_test_dir(SELFTEST_DIR_RW);
     // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
     // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
 
@@ -311,6 +313,17 @@ fty_metric_composite_server_test (bool verbose)
     assert (m);
     assert (streq (fty_proto_value (m), "40.00"));    // <<< 40 / 1
     fty_proto_destroy (&m);
+    {
+      fty::shm::shmMetrics resultT;
+      fty::shm::read_metrics(FTY_SHM_METRIC_TYPE, "world", "temperature", resultT);
+      m = resultT.get(0);
+      fty_proto_print (m);
+      assert (m);
+      assert (streq (fty_proto_value (m), "40.00"));    // <<< 40 / 1
+      fty_shm_delete_test_dir();
+      fty_shm_set_test_dir(SELFTEST_DIR_RW);
+      m = NULL;
+    }
 
     // send another value
     msg_in = fty_proto_encode_metric(
@@ -324,6 +337,17 @@ fty_metric_composite_server_test (bool verbose)
     log_error("value %s", fty_proto_value (m));    // <<< (100 + 40) / 2
     assert (streq (fty_proto_value (m), "70.00"));    // <<< (100 + 40) / 2
     fty_proto_destroy (&m);
+    {
+      fty::shm::shmMetrics resultT;
+      fty::shm::read_metrics(FTY_SHM_METRIC_TYPE, "world", "temperature", resultT);
+      m = resultT.get(0);
+      assert (m);
+      log_error("value %s", fty_proto_value (m));    // <<< (100 + 40) / 2
+      assert (streq (fty_proto_value (m), "70.00"));    // <<< (100 + 40) / 2
+      fty_shm_delete_test_dir();
+      fty_shm_set_test_dir(SELFTEST_DIR_RW);
+      m = NULL;
+    }
 
     // send value for TH1 again
     msg_in = fty_proto_encode_metric(
@@ -335,7 +359,16 @@ fty_metric_composite_server_test (bool verbose)
     m = fty_proto_decode (&msg_out);
     assert (m);
     assert (streq (fty_proto_value (m), "85.00"));     // <<< (100 + 70) / 2
-    fty_proto_destroy (&m);
+    fty_proto_destroy (&m);    
+    {
+      fty::shm::shmMetrics resultT;
+      fty::shm::read_metrics(FTY_SHM_METRIC_TYPE, "world", "temperature", resultT);
+      m = resultT.get(0);
+      assert (m);
+      assert (streq (fty_proto_value (m), "85.00"));     // <<< (100 + 70) / 2
+      fty_shm_delete_test_dir();
+      m = NULL;
+    }
 
     zactor_destroy (&cm_server);
     mlm_client_destroy (&consumer);

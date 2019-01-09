@@ -62,6 +62,7 @@ BuildRequires:  malamute-devel
 BuildRequires:  cxxtools-devel
 BuildRequires:  fty-common-mlm-devel
 BuildRequires:  fty-proto-devel
+BuildRequires:  fty_shm-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -97,6 +98,7 @@ Requires:       malamute-devel
 Requires:       cxxtools-devel
 Requires:       fty-common-mlm-devel
 Requires:       fty-proto-devel
+Requires:       fty_shm-devel
 
 %description devel
 agent that computes new metrics from bunch of other metrics development tools
