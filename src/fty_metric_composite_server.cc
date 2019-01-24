@@ -315,7 +315,7 @@ fty_metric_composite_server_test (bool verbose)
     fty_proto_destroy (&m);
     {
       fty::shm::shmMetrics resultT;
-      fty::shm::read_metrics(FTY_SHM_METRIC_TYPE, "world", ".*temperature", resultT);
+      fty::shm::read_metrics("world", ".*temperature", resultT);
       m = resultT.get(0);
       fty_proto_print (m);
       assert (m);
@@ -339,7 +339,7 @@ fty_metric_composite_server_test (bool verbose)
     fty_proto_destroy (&m);
     {
       fty::shm::shmMetrics resultT;
-      fty::shm::read_metrics(FTY_SHM_METRIC_TYPE, "world", ".*temperature", resultT);
+      fty::shm::read_metrics("world", ".*temperature", resultT);
       m = resultT.get(0);
       assert (m);
       log_error("value %s", fty_proto_value (m));    // <<< (100 + 40) / 2
@@ -362,7 +362,7 @@ fty_metric_composite_server_test (bool verbose)
     fty_proto_destroy (&m);    
     {
       fty::shm::shmMetrics resultT;
-      fty::shm::read_metrics(FTY_SHM_METRIC_TYPE, "world", ".*temperature", resultT);
+      fty::shm::read_metrics("world", ".*temperature", resultT);
       m = resultT.get(0);
       assert (m);
       assert (streq (fty_proto_value (m), "85.00"));     // <<< (100 + 70) / 2
