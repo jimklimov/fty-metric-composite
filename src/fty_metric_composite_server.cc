@@ -227,12 +227,11 @@ fty_metric_composite_server (zsock_t *pipe, void* args) {
             fty_proto_set_unit(n_met,  "%s", lua_tostring(L, -1));
             fty_proto_set_ttl(n_met,  TTL);
             fty_proto_set_time(n_met, std::time (NULL));
-            fty::shm::write_metric(n_met);
-            zmsg_t* z_met = fty_proto_encode(&n_met);
-            int rv = mlm_client_send(client, lua_tostring(L, -3), &z_met);
+            int rv = fty::shm::write_metric(n_met);
             if (rv != 0) {
-                log_error ("mlm_client_send () failed.");
+                log_error ("shm publish failed.");
             }
+            fty_proto_destroy(&n_met);
             free (buff);
         } else {
             log_error ("Not enough valid data...\n");
@@ -278,10 +277,6 @@ fty_metric_composite_server_test (bool verbose)
     mlm_client_connect (producer, endpoint, 1000, "producer");
     mlm_client_set_producer (producer, "_METRICS_SENSOR");
 
-    mlm_client_t *consumer = mlm_client_new ();
-    mlm_client_connect (consumer, endpoint, 1000, "consumer");
-    mlm_client_set_consumer (consumer, FTY_PROTO_STREAM_METRICS, "temperature@world");
-
     char *name = NULL;
     if(asprintf(&name, "composite-metrics-%s", "sd") < 0) {
         log_error ("Can't allocate name of agent");
@@ -303,16 +298,9 @@ fty_metric_composite_server_test (bool verbose)
             NULL, ::time (NULL), 60, "temperature", "TH1", "40", "C");
     assert (msg_in);
     mlm_client_send (producer, "temperature@TH1", &msg_in);
+    sleep(1);
 
-    zmsg_t *msg_out;
     fty_proto_t *m;
-    msg_out = mlm_client_recv (consumer);
-    m = fty_proto_decode (&msg_out);
-    fty_proto_print (m);
-    assert ( streq (mlm_client_sender (consumer), "composite-metrics-sd") );
-    assert (m);
-    assert (streq (fty_proto_value (m), "40.00"));    // <<< 40 / 1
-    fty_proto_destroy (&m);
     {
       fty::shm::shmMetrics resultT;
       fty::shm::read_metrics("world", ".*temperature", resultT);
@@ -330,12 +318,8 @@ fty_metric_composite_server_test (bool verbose)
             NULL, ::time (NULL), 60, "temperature", "TH2", "100", "C");
     assert (msg_in);
     mlm_client_send (producer, "temperature@TH2", &msg_in);
+    sleep(1);
 
-    msg_out = mlm_client_recv (consumer);
-    m = fty_proto_decode (&msg_out);
-    assert (m);
-    log_error("value %s", fty_proto_value (m));    // <<< (100 + 40) / 2
-    assert (streq (fty_proto_value (m), "70.00"));    // <<< (100 + 40) / 2
     fty_proto_destroy (&m);
     {
       fty::shm::shmMetrics resultT;
@@ -354,11 +338,8 @@ fty_metric_composite_server_test (bool verbose)
             NULL, ::time (NULL), 60, "temperature", "TH1", "70.00", "C");
     assert (msg_in);
     mlm_client_send (producer, "temperature@TH1", &msg_in);
+    sleep(1);
 
-    msg_out = mlm_client_recv (consumer);
-    m = fty_proto_decode (&msg_out);
-    assert (m);
-    assert (streq (fty_proto_value (m), "85.00"));     // <<< (100 + 70) / 2
     fty_proto_destroy (&m);    
     {
       fty::shm::shmMetrics resultT;
@@ -371,7 +352,6 @@ fty_metric_composite_server_test (bool verbose)
     }
 
     zactor_destroy (&cm_server);
-    mlm_client_destroy (&consumer);
     mlm_client_destroy (&producer);
     zactor_destroy (&server);
 
