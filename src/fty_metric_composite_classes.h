@@ -32,8 +32,6 @@
 //  External API
 #include "../include/fty_metric_composite.h"
 
-//  Extra headers
-
 //  Opaque class structures to allow forward references
 #ifndef ACTOR_COMMANDS_T_DEFINED
 typedef struct _actor_commands_t actor_commands_t;
@@ -51,6 +49,8 @@ typedef struct _proto_metric_unavailable_t proto_metric_unavailable_t;
 typedef struct _c_metric_conf_t c_metric_conf_t;
 #define C_METRIC_CONF_T_DEFINED
 #endif
+
+//  Extra headers
 
 //  Internal API
 // common definitions and idioms from czmq_prelude.h, which are used in generated code
