@@ -25,6 +25,7 @@ Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
     liblua5.1-0-dev (>= 5.1.0),
+    libcxxtools-dev,
     libfty-common-logging-dev,
     libfty-common-mlm-dev,
     libzmq3-dev,
@@ -50,6 +51,7 @@ Section: libdevel
 Depends:
     ${misc:Depends},
     liblua5.1-0-dev (>= 5.1.0),
+    libcxxtools-dev,
     libfty-common-logging-dev,
     libfty-common-mlm-dev,
     libzmq3-dev,

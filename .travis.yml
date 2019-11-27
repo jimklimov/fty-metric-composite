@@ -58,11 +58,11 @@ env:
 # Prerequisite packages provided by OS distro and used "as is"
 pkg_deps_prereqs_distro: &pkg_deps_prereqs_distro
     - liblua5.1-0-dev
-    - libssl-dev
 
 # Prerequisite packages that may be built from source or used from
 # prebuilt packages of that source (usually not from an OS distro)
 pkg_deps_prereqs_source: &pkg_deps_prereqs_source
+    - cxxtools-dev
     - libfty-common-logging-dev
     - libfty-common-mlm-dev
     - libzmq3-dev

@@ -52,6 +52,7 @@ BuildRequires:  systemd
 BuildRequires:  xmlto
 BuildRequires:  gcc-c++
 BuildRequires:  lua-devel >= 5.1.0
+BuildRequires:  cxxtools-devel
 BuildRequires:  fty-common-logging-devel
 BuildRequires:  fty-common-mlm-devel
 BuildRequires:  zeromq-devel
@@ -84,6 +85,7 @@ Summary:        agent that computes new metrics from bunch of other metrics
 Group:          System/Libraries
 Requires:       libfty_metric_composite0 = %{version}
 Requires:       lua-devel >= 5.1.0
+Requires:       cxxtools-devel
 Requires:       fty-common-logging-devel
 Requires:       fty-common-mlm-devel
 Requires:       zeromq-devel

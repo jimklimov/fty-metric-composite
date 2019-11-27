@@ -285,6 +285,67 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for lua
 dnl END of enabled attempts to search for lua
 
 
+was_cxxtools_check_lib_detected=no
+
+search_cxxtools="yes"
+
+AC_ARG_WITH([cxxtools],
+    [
+        AS_HELP_STRING([--with-cxxtools],
+        [yes or no. Optionally specify cxxtools prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_cxxtools="yes"
+    ],
+    [
+        search_cxxtools="yes"
+    ])
+AS_CASE([x"${with_cxxtools}"],
+    [xyes], [search_cxxtools="yes"],
+    [xno],  [search_cxxtools="no"])
+
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_cxxtools}" = xno],
+    [AC_MSG_WARN([Required dependency on cxxtools was explicitly disabled during configuration by '--with-cxxtools=no'; subsequent full build of fty-metric-composite may fail])])
+
+AS_IF([test x"${search_cxxtools}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
+    found_pkgconfig=""
+    PKG_CHECK_MODULES([cxxtools], [cxxtools >= 0.0.0],
+    [
+        was_cxxtools_check_lib_detected=pkgcfg
+        found_pkgconfig="cxxtools"
+    ],
+    [
+        AC_MSG_WARN([Attribute 'test' is not set on zproject dependency 'cxxtools' - please ensure it is set])
+    ])
+
+dnl END of PKG_CHECK_MODULES and/or direct tests for cxxtools
+    AS_CASE(["x${was_cxxtools_check_lib_detected}"],
+        [xpkgcfg], [
+                PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE ${found_pkgconfig}"
+                CFLAGS="${cxxtools_CFLAGS} ${CFLAGS}"
+                LIBS="${cxxtools_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                CFLAGS="${cxxtools_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${cxxtools_synthetic_libs} ${LDFLAGS}"
+                LIBS="${cxxtools_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([cxxtools_CFLAGS],[${cxxtools_synthetic_cflags}])
+                AC_SUBST([cxxtools_LIBS],[${cxxtools_synthetic_libs}])
+            ],
+        [xno], [
+            AC_MSG_ERROR([Cannot find pkg-config metadata for cxxtools 0.0.0 or higher])
+    ])
+])
+dnl END of enabled attempts to search for cxxtools
+
+
 was_fty_common_logging_check_lib_detected=no
 
 search_libfty_common_logging="yes"

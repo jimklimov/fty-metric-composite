@@ -13,6 +13,7 @@ AM_CXXFLAGS = \
 
 AM_CPPFLAGS = \
     ${lua_5_1_CFLAGS} \
+    ${cxxtools_CFLAGS} \
     ${fty_common_logging_CFLAGS} \
     ${fty_common_mlm_CFLAGS} \
     ${libzmq_CFLAGS} \
@@ -23,7 +24,7 @@ AM_CPPFLAGS = \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${lua_5_1_LIBS} ${fty_common_logging_LIBS} ${fty_common_mlm_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${fty_proto_LIBS} ${fty_shm_LIBS}
+project_libs = ${lua_5_1_LIBS} ${cxxtools_LIBS} ${fty_common_logging_LIBS} ${fty_common_mlm_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${fty_proto_LIBS} ${fty_shm_LIBS}
 
 SUBDIRS = doc
 SUBDIRS += include
@@ -45,6 +46,7 @@ DISTCLEANFILES =
 if ENABLE_DIST_CMAKEFILES
 EXTRA_DIST += \
     Findlua_5_1.cmake \
+    Findcxxtools.cmake \
     Findfty_common_logging.cmake \
     Findfty_common_mlm.cmake \
     Findlibzmq.cmake \

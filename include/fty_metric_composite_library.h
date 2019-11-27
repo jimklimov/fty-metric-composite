@@ -31,6 +31,7 @@
 
 //  External dependencies
 #include <lua.hpp>
+#include <cxxtools/allocator.h>
 #include <fty_log.h>
 #include <fty_common_mlm.h>
 #include <ftyproto.h>
