@@ -40,11 +40,6 @@ typedef struct {
 static test_item_t
 all_tests [] = {
 #ifdef FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
-// Tests for draft public classes:
-    { "fty_metric_composite_server", fty_metric_composite_server_test, false, true, NULL },
-    { "fty_metric_composite_configurator_server", fty_metric_composite_configurator_server_test, false, true, NULL },
-#endif // FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
-#ifdef FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
 // Tests for stable/draft private classes:
 // Now built only with --enable-drafts, so even stable builds are hidden behind the flag
     { "actor_commands", NULL, true, false, "actor_commands_test" },
@@ -52,6 +47,11 @@ all_tests [] = {
     { "proto_metric_unavailable", NULL, true, false, "proto_metric_unavailable_test" },
     { "c_metric_conf", NULL, true, false, "c_metric_conf_test" },
     { "private_classes", NULL, false, false, "$ALL" }, // compat option for older projects
+#endif // FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
+#ifdef FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
+// Tests for draft public classes:
+    { "fty_metric_composite_server", fty_metric_composite_server_test, false, true, NULL },
+    { "fty_metric_composite_configurator_server", fty_metric_composite_configurator_server_test, false, true, NULL },
 #endif // FTY_METRIC_COMPOSITE_BUILD_DRAFT_API
     {NULL, NULL, 0, 0, NULL}          //  Sentinel
 };
