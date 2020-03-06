@@ -5,6 +5,10 @@ After=malamute.service
 Conflicts=fty-metric-composite@%i.path
 PartOf=bios.target
 
+After=fty-asset.service
+Requires=fty-asset.service
+BindsTo=fty-asset.service
+
 [Service]
 Type=simple
 User=bios

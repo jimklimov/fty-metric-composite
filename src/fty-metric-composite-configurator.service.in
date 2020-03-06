@@ -3,6 +3,7 @@ Description=fty-metric-composite-configurator service
 Requires=malamute.service fty-asset.service
 After=malamute.service fty-asset.service
 PartOf=bios.target
+BindsTo=fty-asset.service
 
 [Service]
 Type=simple
